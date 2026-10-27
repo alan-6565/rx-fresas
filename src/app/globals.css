@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fdf3ef;
+  --blush: #f9e1e1;
+  --line: #f1d3d1;
+  --rose: #e8506a;
+  --rose-dark: #d43c57;
+  --rose-soft: #f48a9a;
+  --ink: #4a1d24;
+  --ink-soft: #7d5a5d;
+  --night: #1f1416;
+  --cocoa: #4a2a20;
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-blush: var(--blush);
+  --color-line: var(--line);
+  --color-rose: var(--rose);
+  --color-rose-dark: var(--rose-dark);
+  --color-rose-soft: var(--rose-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-night: var(--night);
+  --color-cocoa: var(--cocoa);
+  --font-hand: var(--font-hand);
+  --font-script: var(--font-script);
+  --font-ui: var(--font-ui);
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
