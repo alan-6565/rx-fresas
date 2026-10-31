@@ -35,8 +35,11 @@ export async function stripeV2<T = any>(method: "GET" | "POST", path: string, bo
   return data as T;
 }
 
+/** Test and live keys each have their own R&X account, so switching keys never mixes them */
+export const accountSettingKey = () => (process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") ? "stripe_account_id_live" : "stripe_account_id");
+
 /** R&X's connected Stripe account, saved by scripts/connect-rx.mjs */
 export async function connectedAccountId(): Promise<string | null> {
-  const { data } = await supabaseAdmin.from("settings").select("value").eq("key", "stripe_account_id").maybeSingle();
+  const { data } = await supabaseAdmin.from("settings").select("value").eq("key", accountSettingKey()).maybeSingle();
   return data?.value ?? null;
 }

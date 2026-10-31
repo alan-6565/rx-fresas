@@ -4,6 +4,9 @@
 //
 //   node --env-file=.env.local scripts/connect-rx.mjs [return-url]
 //   node --env-file=.env.local scripts/connect-rx.mjs --status
+//
+// With live keys (node --env-file=.env.live …) it makes and keeps a separate
+// live account, so the test one stays for local testing.
 
 const STRIPE_V2_VERSION = "2026-09-30.preview";
 const { STRIPE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
@@ -39,7 +42,11 @@ async function db(method, query, body) {
   return res.status === 204 || res.headers.get("content-length") === "0" ? null : res.json().catch(() => null);
 }
 
-const rows = await db("GET", "settings?key=eq.stripe_account_id&select=value");
+const LIVE = STRIPE_SECRET_KEY.startsWith("sk_live_");
+const SETTING = LIVE ? "stripe_account_id_live" : "stripe_account_id";
+console.log(LIVE ? "LIVE mode: real money" : "Test mode");
+
+const rows = await db("GET", `settings?key=eq.${SETTING}&select=value`);
 let accountId = rows?.[0]?.value;
 
 if (process.argv[2] === "--status") {
@@ -77,11 +84,11 @@ if (!accountId) {
     },
   });
   accountId = account.id;
-  await db("POST", "settings", { key: "stripe_account_id", value: accountId, updated_at: new Date().toISOString() });
+  await db("POST", "settings", { key: SETTING, value: accountId, updated_at: new Date().toISOString() });
   console.log(`Created R&X account ${accountId}`);
 }
 
-const returnUrl = process.argv[2] ?? "http://localhost:3011/";
+const returnUrl = process.argv[2] ?? (LIVE ? "https://rx-fresas.vercel.app/" : "http://localhost:3011/");
 const link = await stripeV2("POST", "/v2/core/account_links", {
   account: accountId,
   use_case: { type: "account_onboarding", account_onboarding: { return_url: returnUrl, refresh_url: returnUrl } },
