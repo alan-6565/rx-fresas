@@ -93,7 +93,7 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
           <div className="mt-8 grid md:grid-cols-2 gap-5">
             {list.map((item) => (
               <article key={item.id} className="flex items-center gap-5 rounded-3xl bg-white border border-line p-3 pr-5 shadow-sm">
-                <Photo src={item.image} alt={item.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shrink-0" sizes="128px" />
+                <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shrink-0" sizes="128px" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="font-bold text-lg leading-tight">{item.name}</h3>

@@ -18,7 +18,7 @@ async function shrink(file: File, max = 1400): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't read that photo"))), "image/jpeg", 0.85));
 }
 
-export function PhotoPicker({ value, onChange, folder, aspect = "aspect-[4/3]" }: { value: string; onChange: (url: string) => void; folder: "menu" | "locations"; aspect?: string }) {
+export function PhotoPicker({ value, onChange, folder, aspect = "aspect-[4/3]" }: { value: string; onChange: (url: string) => void; folder: "menu" | "locations" | "site"; aspect?: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

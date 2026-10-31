@@ -10,7 +10,7 @@ const MAX_BYTES = 4 * 1024 * 1024;
 export async function POST(req: NextRequest) {
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
-  const folder = form?.get("folder") === "locations" ? "locations" : "menu";
+  const folder = ["locations", "site"].includes(String(form?.get("folder"))) ? String(form?.get("folder")) : "menu";
   if (!(file instanceof File)) return bad("No photo was sent.");
   const ext = TYPES[file.type];
   if (!ext) return bad("Use a JPG, PNG or WebP photo.");

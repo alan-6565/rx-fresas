@@ -83,7 +83,7 @@ export function StopCards({ spots }: { spots: Spot[] }) {
             <PinIcon className="w-5 h-5" /> Cómo llegar <ArrowRightIcon className="w-4 h-4" />
           </a>
         </div>
-        <Photo src={first.spot.image} alt={`El food truck en ${first.spot.name}`} className="aspect-[16/10] md:aspect-auto md:min-h-64 rounded-[1.5rem]" sizes="(min-width:1024px) 34vw, 100vw" priority />
+        <Photo slot={`spot:${first.spot.id}`} src={first.spot.image} alt={`El food truck en ${first.spot.name}`} className="aspect-[16/10] md:aspect-auto md:min-h-64 rounded-[1.5rem]" sizes="(min-width:1024px) 34vw, 100vw" priority />
       </article>
 
       {/* The stop after that */}
@@ -103,7 +103,7 @@ export function StopCards({ spots }: { spots: Spot[] }) {
               <h2 className="font-hand text-3xl sm:text-4xl leading-none">{second.spot.name}</h2>
               <Details stop={second} now={now} />
             </div>
-            <Photo src={second.spot.image} alt={`El food truck en ${second.spot.name}`} className="hidden sm:block lg:hidden xl:block aspect-square rounded-2xl" sizes="144px" />
+            <Photo slot={`spot:${second.spot.id}`} src={second.spot.image} alt={`El food truck en ${second.spot.name}`} className="hidden sm:block lg:hidden xl:block aspect-square rounded-2xl" sizes="144px" />
           </div>
         </article>
       )}

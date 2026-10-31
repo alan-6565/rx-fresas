@@ -59,9 +59,26 @@ export function LoveNote({ className = "" }: { className?: string }) {
   );
 }
 
-export function Photo({ src, alt, className = "", sizes = "50vw", priority = false, fit = "object-cover" }: { src: string; alt: string; className?: string; sizes?: string; priority?: boolean; fit?: string }) {
+/** `slot` marks photos staff can replace from Dashboard → Edit Website */
+export function Photo({
+  src,
+  alt,
+  className = "",
+  sizes = "50vw",
+  priority = false,
+  fit = "object-cover",
+  slot,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  sizes?: string;
+  priority?: boolean;
+  fit?: string;
+  slot?: string;
+}) {
   return (
-    <div className={`${className.includes("absolute") ? "" : "relative"} overflow-hidden ${className}`}>
+    <div data-photo-slot={slot} className={`${className.includes("absolute") ? "" : "relative"} overflow-hidden ${className}`}>
       <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={fit} />
     </div>
   );

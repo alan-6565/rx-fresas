@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { business, money } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
+import { getSitePhotos } from "@/lib/site-photos";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { hoursSummary, mapsUrl } from "@/lib/schedule";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
@@ -17,7 +18,7 @@ const features = [
 ];
 
 export default async function Home() {
-  const [{ categories, items }, spots] = await Promise.all([getMenu(), getSpots()]);
+  const [{ categories, items }, spots, photos] = await Promise.all([getMenu(), getSpots(), getSitePhotos()]);
   // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
   // (one card per photo, so two sizes of the same cup don't show twice)
   const cafes = (items.some((i) => i.category === "cafes") ? items.filter((i) => i.category === "cafes") : items)
@@ -30,7 +31,7 @@ export default async function Home() {
     <>
       {/* Hero: the food truck at night */}
       <section className="relative -mt-24 sm:-mt-28 min-h-[640px] lg:min-h-[760px] overflow-hidden bg-night text-white">
-        <Photo src="/images/hero.jpg" alt="El food truck de R&X Fresas con Crema de noche" className="absolute inset-0 lg:left-[30%]" sizes="100vw" priority fit="object-cover object-[70%_center]" />
+        <Photo slot="home.hero" src={photos.photo("home.hero")} alt="El food truck de R&X Fresas con Crema de noche" className="absolute inset-0 lg:left-[30%]" sizes="100vw" priority fit="object-cover object-[70%_center]" />
         <div className="absolute inset-0 bg-night/45 lg:hidden" />
         <div className="absolute inset-0 bg-gradient-to-r from-night/95 via-night/70 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night/80 to-transparent" />
@@ -84,7 +85,7 @@ export default async function Home() {
         <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {cafes.map((item) => (
             <article key={item.id} className="group rounded-2xl bg-white shadow-sm border border-line overflow-hidden">
-              <Photo src={item.image} alt={item.name} className="aspect-square" sizes="(min-width:1024px) 25vw, 50vw" />
+              <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="aspect-square" sizes="(min-width:1024px) 25vw, 50vw" />
               <div className="p-4 text-center">
                 <h3 className="font-semibold leading-tight">{item.name}</h3>
                 <p className="mt-1 text-rose font-bold">{hasRequiredUpcharge({ price: item.price, options: item.options ?? [] }) && "Desde "}{money(item.price)}</p>
@@ -113,7 +114,7 @@ export default async function Home() {
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
             {otono.map((item) => (
               <article key={item.id} className="relative rounded-3xl overflow-hidden aspect-square shadow-xl">
-                <Photo src={item.image} alt={item.name} className="absolute inset-0" sizes="(min-width:1024px) 28vw, 50vw" />
+                <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="absolute inset-0" sizes="(min-width:1024px) 28vw, 50vw" />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-4 sm:p-5 pt-16">
                   <h3 className="font-hand text-3xl sm:text-4xl leading-none">{item.name}</h3>
                   <p className="mt-1 text-sm text-cream/80">{item.desc}</p>
@@ -138,7 +139,7 @@ export default async function Home() {
           </Button>
         </div>
         <div className="relative">
-          <Photo src="/images/historia.jpg" alt="El food truck de R&X" className="aspect-[4/3] rounded-[2rem] shadow-xl" />
+          <Photo slot="home.story" src={photos.photo("home.story")} alt="El food truck de R&X" className="aspect-[4/3] rounded-[2rem] shadow-xl" />
           <div className="absolute -bottom-8 -left-4 sm:-left-10 rounded-2xl bg-blush px-6 py-4 shadow-lg">
             <LoveNote className="text-2xl" />
           </div>
@@ -152,7 +153,7 @@ export default async function Home() {
         <div className="mt-10 grid sm:grid-cols-2 gap-6 text-left">
           {spots.map((l) => (
             <article key={l.id} className="rounded-3xl bg-white border border-line shadow-sm overflow-hidden">
-              <Photo src={l.image} alt={`Food truck en ${l.name}`} className="aspect-[2.2/1]" />
+              <Photo slot={`spot:${l.id}`} src={l.image} alt={`Food truck en ${l.name}`} className="aspect-[2.2/1]" />
               <div className="p-5 flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h3 className="flex items-center gap-2 text-xl font-bold">

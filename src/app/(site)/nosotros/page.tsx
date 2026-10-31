@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getSitePhotos } from "@/lib/site-photos";
 import { Button, Heading, LoveNote, PageTop, Photo } from "@/components/ui";
 import { CupIcon, HeartDoodle, LeafIcon } from "@/components/icons";
 
@@ -10,7 +11,8 @@ const values = [
   { icon: CupIcon, title: "Apoyando lo local", text: "Gracias por ser parte de nuestra historia. ♥" },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const photos = await getSitePhotos();
   return (
     <PageTop>
       <section className="grid lg:grid-cols-2 gap-12 items-center">
@@ -28,7 +30,7 @@ export default function AboutPage() {
           </Button>
         </div>
         <div className="relative">
-          <Photo src="/images/historia.jpg" alt="El food truck de R&X Fresas con Crema" className="aspect-[4/3] rounded-[2rem] shadow-xl" priority />
+          <Photo slot="about.story" src={photos.photo("about.story")} alt="El food truck de R&X Fresas con Crema" className="aspect-[4/3] rounded-[2rem] shadow-xl" priority />
           <div className="absolute -bottom-8 right-4 sm:-right-6 rounded-2xl bg-white px-6 py-4 shadow-lg">
             <LoveNote className="text-2xl" />
           </div>
@@ -48,9 +50,9 @@ export default function AboutPage() {
       </section>
 
       <section className="mt-12 grid grid-cols-3 gap-3 sm:gap-6">
-        <Photo src="/images/gal-prep.jpg" alt="Preparando fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
-        <Photo src="/images/gal-cup.jpg" alt="Vaso de fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
-        <Photo src="/images/gal-pancakes.jpg" alt="Mini pancakes con fresa y plátano" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
+        <Photo slot="about.1" src={photos.photo("about.1")} alt="Preparando fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
+        <Photo slot="about.2" src={photos.photo("about.2")} alt="Vaso de fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
+        <Photo slot="about.3" src={photos.photo("about.3")} alt="Mini pancakes con fresa y plátano" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
       </section>
     </PageTop>
   );

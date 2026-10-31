@@ -16,7 +16,7 @@ export const adminNav = [
   { href: "/admin/orders", label: "Orders", icon: OrdersIcon },
   { href: "/admin/menu", label: "Menu", icon: MenuBookIcon },
   { href: "/admin/locations", label: "Locations", icon: PinIcon },
-  { href: "/admin/media", label: "Media", icon: ImageIcon },
+  { href: "/admin/website", label: "Edit Website", icon: ImageIcon },
   { href: "/admin/promotions", label: "Promotions", icon: MegaphoneIcon },
   { href: "/admin/customers", label: "Customers", icon: UsersIcon },
   { href: "/admin/analytics", label: "Analytics", icon: ChartIcon },

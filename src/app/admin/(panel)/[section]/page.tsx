@@ -5,7 +5,6 @@ import { Card, PageHeader } from "@/components/admin/ui";
 
 // Sections from the mockup that come in a later step
 const SOON: Record<string, string> = {
-  media: "Upload and organize photos for the menu, website and social media.",
   promotions: "Create banners, seasonal menus and specials for the website.",
   customers: "See who orders most and who keeps coming back.",
   analytics: "Sales, busiest hours and best sellers over time.",
