@@ -10,7 +10,7 @@ import { adminNav } from "@/components/admin/nav";
 function Logo() {
   return (
     <Link href="/admin" aria-label="Dashboard" className="relative block w-24 h-24 mx-auto rounded-full overflow-hidden ring-4 ring-white shadow-md">
-      <Image src="/images/logo.png" alt="R&X Fresas con Crema" fill sizes="96px" className="object-cover" priority />
+      <Image src="/images/logo-v2.png" alt="R&X Fresas con Crema" fill sizes="96px" className="object-cover" priority />
     </Link>
   );
 }

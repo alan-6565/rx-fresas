@@ -85,7 +85,7 @@ export default async function DashboardPage() {
         <span className="rounded-xl border border-line bg-white px-4 py-2 text-sm">{date}</span>
         <span className="flex items-center gap-2 rounded-xl border border-line bg-white pl-1.5 pr-4 py-1.5">
           <span className="relative w-8 h-8 rounded-full overflow-hidden">
-            <Image src="/images/logo.png" alt="" fill sizes="32px" className="object-cover" />
+            <Image src="/images/logo-v2.png" alt="" fill sizes="32px" className="object-cover" />
           </span>
           <span className="leading-tight">
             <span className="block text-sm font-semibold">R&amp;X Fresas</span>

@@ -11,7 +11,7 @@ import { ArrowRightIcon, BagIcon, CloseIcon, FacebookIcon, InstagramIcon, MenuIc
 export function Logo({ className = "w-24 h-24" }: { className?: string }) {
   return (
     <Link href="/" aria-label="R&X Fresas con Crema, inicio" className={`relative shrink-0 block rounded-full bg-cream shadow-lg ring-4 ring-white ${className}`}>
-      <Image src="/images/logo.png" alt="R&X Fresas con Crema" fill sizes="120px" className="object-cover rounded-full" priority />
+      <Image src="/images/logo-v2.png" alt="R&X Fresas con Crema" fill sizes="120px" className="object-cover rounded-full" priority />
     </Link>
   );
 }

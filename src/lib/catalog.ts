@@ -36,7 +36,7 @@ export type LocationRow = {
   sort: number;
 };
 
-export const FALLBACK_IMAGE = "/images/logo.png";
+export const FALLBACK_IMAGE = "/images/logo-v2.png";
 
 const configured = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 

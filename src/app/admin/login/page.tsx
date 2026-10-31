@@ -26,7 +26,7 @@ export default function LoginPage() {
     <main className="min-h-screen grid place-items-center bg-blush px-4">
       <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-cream shadow-xl p-8 text-center">
         <div className="relative mx-auto w-28 h-28 rounded-full overflow-hidden ring-4 ring-white shadow-md">
-          <Image src="/images/logo.png" alt="R&X Fresas con Crema" fill sizes="112px" className="object-cover" priority />
+          <Image src="/images/logo-v2.png" alt="R&X Fresas con Crema" fill sizes="112px" className="object-cover" priority />
         </div>
         <h1 className="mt-5 font-hand text-5xl">Staff Login</h1>
         <p className="mt-1 text-sm text-ink-soft">R&X Fresas con Crema dashboard</p>
