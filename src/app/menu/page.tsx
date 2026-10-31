@@ -54,8 +54,8 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
       </div>
 
       <p className="mx-auto mt-6 max-w-2xl rounded-2xl bg-blush px-5 py-3 text-center text-sm text-ink">
-        <strong>Pedidos en línea:</strong> se agrega una tarifa de servicio de {money(PLATFORM_FEE_PER_ITEM / 100)} por artículo, el procesamiento de tarjeta y
-        los impuestos. Los precios del menú son los mismos que en el truck.
+        <strong>Pedidos en línea:</strong> se agrega una tarifa de servicio de {money(PLATFORM_FEE_PER_ITEM / 100)} por artículo y el procesamiento de
+        tarjeta. Los precios del menú son los mismos que en el truck.
       </p>
 
       <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-5">

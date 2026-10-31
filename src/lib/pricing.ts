@@ -1,11 +1,8 @@
 import { items as menu } from "@/lib/data";
 
-// Everything is in cents. The customer pays tax, the platform fee and the card
-// processing, so R&X keeps the full menu price plus the tax they owe the state.
-
-// Richmond, CA combined rate (6% state + 0.25% county + 1% city + 2.5% district).
-// Confirm each truck location with CDTFA's address lookup before going live.
-export const TAX_RATE = 0.0975;
+// Everything is in cents. The customer pays the platform fee and the card
+// processing on top of menu prices, so R&X keeps the full menu price. No sales
+// tax is added; R&X handles tax the same way they do at the truck.
 
 // Platform fee: $1 for every item in the order, no cap.
 export const PLATFORM_FEE_PER_ITEM = 100;
@@ -19,7 +16,6 @@ export type Line = { id: string; qty: number };
 export type Quote = {
   items: number;
   subtotal: number;
-  tax: number;
   platformFee: number;
   cardFee: number;
   total: number;
@@ -47,14 +43,13 @@ export function quote(lines: Line[]): Quote {
     subtotal += Math.round(item.price * 100) * qty;
   }
 
-  const tax = Math.round(subtotal * TAX_RATE);
   const platformFee = items * PLATFORM_FEE_PER_ITEM;
-  const base = subtotal + tax + platformFee;
+  const base = subtotal + platformFee;
 
   // Smallest total whose Stripe fee is fully covered by the card fee
   let total = items === 0 ? 0 : Math.ceil((base + STRIPE_FIXED) / (1 - STRIPE_PERCENT));
   while (total > 0 && total - stripeFee(total) < base) total++;
 
   const cardFee = total - base;
-  return { items, subtotal, tax, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
+  return { items, subtotal, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
 }

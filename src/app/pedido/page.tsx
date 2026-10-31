@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { locations, money } from "@/lib/data";
-import { PLATFORM_FEE_PER_ITEM, TAX_RATE, quote } from "@/lib/pricing";
+import { PLATFORM_FEE_PER_ITEM, quote } from "@/lib/pricing";
 import { useCart } from "@/lib/cart";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AppleIcon, CalendarIcon, ClockIcon, HeartSolid, LockIcon, TrashIcon } from "@/components/icons";
@@ -199,10 +199,6 @@ export default function OrderPage() {
             <div className="flex justify-between">
               <dt>Subtotal</dt>
               <dd>{money(q.subtotal / 100)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt>Impuestos ({(TAX_RATE * 100).toFixed(2)}%)</dt>
-              <dd>{money(q.tax / 100)}</dd>
             </div>
             <div className="flex justify-between">
               <dt>
