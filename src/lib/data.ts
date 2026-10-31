@@ -34,6 +34,13 @@ export const locations = [
   },
 ];
 
+// Truck hours are 6–10 p.m., so pickup slots every 15 minutes in that window
+export const pickupTimes = Array.from({ length: 16 }, (_, i) => {
+  const mins = 18 * 60 + i * 15;
+  return `${Math.floor(mins / 60) - 12}:${(mins % 60).toString().padStart(2, "0")} p.m.`;
+});
+export const pickupDays = ["Hoy", "Mañana"];
+
 export const categories = [
   { id: "cafes", label: "Cafés", title: "Cafés Fríos y Calientes" },
   { id: "fresas", label: "Fresas con Crema", title: "Fresas con Crema" },

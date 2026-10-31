@@ -2,17 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { locations, money } from "@/lib/data";
+import { locations, money, pickupDays, pickupTimes } from "@/lib/data";
 import { PLATFORM_FEE_PER_ITEM, quote } from "@/lib/pricing";
 import { useCart } from "@/lib/cart";
 import { Heading, PageTop, Photo } from "@/components/ui";
-import { AppleIcon, CalendarIcon, ClockIcon, HeartSolid, LockIcon, TrashIcon } from "@/components/icons";
-
-// Truck hours are 6–10 p.m., so pickup slots every 15 minutes in that window
-const TIMES = Array.from({ length: 16 }, (_, i) => {
-  const mins = 18 * 60 + i * 15;
-  return `${Math.floor(mins / 60) - 12}:${(mins % 60).toString().padStart(2, "0")} p.m.`;
-});
+import { AppleIcon, CalendarIcon, ClockIcon, LockIcon, TrashIcon } from "@/components/icons";
 
 const input = "w-full rounded-xl border border-line bg-white px-4 py-2.5 placeholder:text-ink-soft/50 focus:outline-none focus:border-rose";
 
@@ -34,46 +28,38 @@ function Label({ icon, children }: { icon?: React.ReactNode; children: React.Rea
 
 export default function OrderPage() {
   const cart = useCart();
-  const [mode, setMode] = useState<"pickup" | "delivery">("pickup");
   const [spot, setSpot] = useState(locations[0].name);
-  const [day, setDay] = useState("Hoy");
-  const [time, setTime] = useState(TIMES[0]);
+  const [day, setDay] = useState(pickupDays[0]);
+  const [time, setTime] = useState(pickupTimes[0]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
-  const [placed, setPlaced] = useState<null | { total: number; name: string; when: string }>(null);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   // Cents, priced from menu ids the same way the server will charge them
   const q = quote(cart.lines.map(({ id, qty }) => ({ id, qty })));
-  const total = q.total / 100;
   const ready = cart.count > 0 && name.trim() !== "" && phone.trim() !== "";
 
-  const pay = () => {
-    if (!ready) return;
-    setPlaced({ total, name: name.trim().split(" ")[0], when: `${day.toLowerCase()} a las ${time}` });
-    cart.clear();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // The server re-prices the order, saves it and hands back a Stripe Checkout link
+  const pay = async () => {
+    if (!ready || sending) return;
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, notes, location: spot, day, time, lines: cart.lines.map(({ id, qty }) => ({ id, qty })) }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "No pudimos iniciar el pago. Intenta otra vez.");
+      window.location.href = data.url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No pudimos iniciar el pago. Intenta otra vez.");
+      setSending(false);
+    }
   };
-
-  if (placed) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <span className="mx-auto grid place-items-center w-20 h-20 rounded-full bg-rose text-white shadow-lg">
-          <HeartSolid className="w-10 h-10" />
-        </span>
-        <h1 className="mt-6 font-hand text-6xl">¡Gracias, {placed.name}!</h1>
-        <p className="mt-4 text-lg">
-          Tu pedido de <strong>{money(placed.total)}</strong> estará listo {placed.when} en <strong>{spot}</strong>.
-        </p>
-        <p className="mt-6 rounded-2xl border-2 border-dashed border-line px-4 py-3 text-sm text-ink-soft">
-          Sitio de muestra: no se cobró nada y no se envió ningún pedido.
-        </p>
-        <Link href="/menu" className="mt-8 inline-flex rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-8 py-3">
-          Volver al Menú
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <PageTop>
@@ -132,47 +118,30 @@ export default function OrderPage() {
 
         {/* Pickup info */}
         <Panel title="Entrega o pickup">
-          <div className="grid grid-cols-2 gap-2">
-            {(["pickup", "delivery"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`rounded-xl border py-2.5 text-sm font-semibold transition-colors ${mode === m ? "bg-blush border-rose text-rose" : "bg-white border-line"}`}
-              >
-                {m === "pickup" ? "Pickup" : "Delivery"}
-                {m === "delivery" && <span className="block text-[10px] font-normal text-ink-soft">(si está disponible)</span>}
-              </button>
-            ))}
-          </div>
+          <p className="rounded-xl bg-blush border border-rose text-rose text-center text-sm font-semibold py-2.5">Pickup en el truck</p>
 
           <div className="mt-4 space-y-3">
-            {mode === "pickup" ? (
-              <label className="block">
-                <Label>Ubicación</Label>
-                <select value={spot} onChange={(e) => setSpot(e.target.value)} className={input}>
-                  {locations.map((l) => (
-                    <option key={l.name}>{l.name}</option>
-                  ))}
-                </select>
-              </label>
-            ) : (
-              <label className="block">
-                <Label>Dirección de entrega</Label>
-                <input placeholder="Calle, ciudad" className={input} />
-              </label>
-            )}
+            <label className="block">
+              <Label>Ubicación</Label>
+              <select value={spot} onChange={(e) => setSpot(e.target.value)} className={input}>
+                {locations.map((l) => (
+                  <option key={l.name}>{l.name}</option>
+                ))}
+              </select>
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <Label icon={<CalendarIcon className="w-4 h-4" />}>Fecha</Label>
                 <select value={day} onChange={(e) => setDay(e.target.value)} className={input}>
-                  <option>Hoy</option>
-                  <option>Mañana</option>
+                  {pickupDays.map((d) => (
+                    <option key={d}>{d}</option>
+                  ))}
                 </select>
               </label>
               <label className="block">
                 <Label icon={<ClockIcon className="w-4 h-4" />}>Hora</Label>
                 <select value={time} onChange={(e) => setTime(e.target.value)} className={input}>
-                  {TIMES.map((t) => (
+                  {pickupTimes.map((t) => (
                     <option key={t}>{t}</option>
                   ))}
                 </select>
@@ -215,49 +184,25 @@ export default function OrderPage() {
             </div>
             <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
               <dt>Total</dt>
-              <dd className="text-rose">{money(total)}</dd>
+              <dd className="text-rose">{money(q.total / 100)}</dd>
             </div>
           </dl>
 
-          <button onClick={pay} disabled={!ready} className="mt-5 w-full flex items-center justify-center gap-1.5 rounded-xl bg-black text-white font-semibold py-3 disabled:opacity-40">
-            Comprar con <AppleIcon className="w-4 h-4 -mt-0.5" />Pay
-          </button>
-          <p className="my-3 text-center text-xs text-ink-soft">o pagar con tarjeta</p>
-
-          <div className="space-y-3">
-            <label className="block">
-              <Label>Número de tarjeta</Label>
-              <div className="relative">
-                <input placeholder="1234 1234 1234 1234" inputMode="numeric" className={`${input} pr-28`} />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1 text-[9px] font-bold">
-                  <span className="rounded bg-[#1a1f71] text-white px-1">VISA</span>
-                  <span className="rounded bg-[#eb001b] text-white px-1">MC</span>
-                  <span className="rounded bg-[#2e77bb] text-white px-1">AMEX</span>
-                </span>
-              </div>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <Label>Fecha de expiración</Label>
-                <input placeholder="MM / AA" className={input} />
-              </label>
-              <label className="block">
-                <Label>CVC</Label>
-                <input placeholder="CVC" className={input} />
-              </label>
-            </div>
-          </div>
-
           <button
             onClick={pay}
-            disabled={!ready}
+            disabled={!ready || sending}
             className="mt-5 w-full flex items-center justify-center gap-2 rounded-xl bg-rose hover:bg-rose-dark disabled:bg-line disabled:text-ink-soft text-white text-lg font-bold py-3.5 transition-colors"
           >
-            Pagar {money(total)} <LockIcon className="w-5 h-5" />
+            {sending ? "Abriendo pago…" : <>Pagar {money(q.total / 100)} <LockIcon className="w-5 h-5" /></>}
           </button>
-          {!ready && (
+          {error ? (
+            <p role="alert" className="mt-2 text-center text-sm text-rose-dark">{error}</p>
+          ) : !ready ? (
             <p className="mt-2 text-center text-xs text-ink-soft">{cart.count === 0 ? "Agrega algo a tu orden primero." : "Agrega tu nombre y teléfono."}</p>
-          )}
+          ) : null}
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-ink-soft">
+            Pago seguro con Stripe: tarjeta, <AppleIcon className="w-3 h-3" /> Pay o Google Pay
+          </p>
         </Panel>
       </div>
     </PageTop>

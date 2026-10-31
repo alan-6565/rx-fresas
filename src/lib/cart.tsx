@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { items as menu } from "@/lib/data";
 
 export type CartItem = { id: string; qty: number };
@@ -43,6 +43,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [items, loaded]);
 
+  // Stable so effects can depend on it (the thank-you page clears the cart)
+  const clear = useCallback(() => setItems([]), []);
+
   const lines = items.flatMap((i) => {
     const m = menu.find((x) => x.id === i.id);
     return m ? [{ ...i, name: m.name, desc: m.desc, image: m.image, price: m.price }] : [];
@@ -54,7 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     add: (id) =>
       setItems((prev) => (prev.some((i) => i.id === id) ? prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i)) : [...prev, { id, qty: 1 }])),
     setQty: (id, qty) => setItems((prev) => (qty < 1 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, qty } : i)))),
-    clear: () => setItems([]),
+    clear,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
