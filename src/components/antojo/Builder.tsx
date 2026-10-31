@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Item } from "@/lib/data";
@@ -27,9 +28,10 @@ const readFavs = (): Favorite[] => {
 
 const inGroup = (picks: string[], g: OptionGroup) => picks.filter((p) => p.startsWith(`${g.id}:`)).map((p) => p.slice(g.id.length + 1));
 
-export function Builder({ items }: { items: Item[] }) {
+/** `sheet`: shown over the menu after tapping order, instead of on its own page */
+export function Builder({ items, initialId, sheet, onAdded }: { items: Item[]; initialId?: string; sheet?: boolean; onAdded?: () => void }) {
   const cart = useCart();
-  const [baseId, setBaseId] = useState(items[0]?.id ?? "");
+  const [baseId, setBaseId] = useState(items.some((i) => i.id === initialId) ? initialId! : (items[0]?.id ?? ""));
   const base = items.find((i) => i.id === baseId) ?? items[0];
   const groups = base?.options ?? [];
   const [picks, setPicks] = useState<string[]>(() => (base ? defaultPicks({ ...base, options: groups }) : []));
@@ -92,6 +94,7 @@ export function Builder({ items }: { items: Item[] }) {
     cart.add(base.id, picks);
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
+    onAdded?.();
   };
 
   const saveFav = () => {
@@ -105,9 +108,9 @@ export function Builder({ items }: { items: Item[] }) {
   };
 
   return (
-    <div className="mt-10 grid gap-6 md:grid-cols-[1fr_1.05fr] items-start">
+    <div className={`grid gap-6 md:grid-cols-[1fr_1.05fr] items-start ${sheet ? "" : "mt-10"}`}>
       {/* Live cup */}
-      <section className="md:sticky md:top-28 rounded-[2rem] border border-line bg-gradient-to-b from-blush to-cream p-5 sm:p-8 text-center shadow-sm">
+      <section className={`md:sticky ${sheet ? "md:top-4" : "md:top-28"} rounded-[2rem] border border-line bg-gradient-to-b from-blush to-cream p-5 sm:p-8 text-center shadow-sm`}>
         <div className="mx-auto max-w-[230px] sm:max-w-[280px] lg:max-w-[380px]">
           <CupPreview look={look} label={`${base.name}: ${summary}`} />
         </div>
@@ -138,17 +141,20 @@ export function Builder({ items }: { items: Item[] }) {
           </div>
         )}
 
-        <Step n={1} title="Elige tu vaso">
+        <Step n={1} title="Elige tu estilo">
           <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2">
             {items.map((i) => (
               <button
                 key={i.id}
                 onClick={() => chooseBase(i.id)}
                 aria-pressed={i.id === base.id}
-                className={`rounded-2xl border px-3 py-3 text-left transition-colors ${i.id === base.id ? "border-rose bg-blush" : "border-line hover:border-rose"}`}
+                className={`overflow-hidden rounded-2xl border text-left transition-colors ${i.id === base.id ? "border-rose bg-blush ring-2 ring-rose" : "border-line hover:border-rose"}`}
               >
-                <span className="block font-bold leading-tight">{i.name.replace("Fresas con Crema ", "")}</span>
-                <span className="mt-0.5 text-xs text-ink-soft line-clamp-2">{i.desc.replace(/ Con whipped cream\.$/, "")}</span>
+                <span className="relative block aspect-[4/3] bg-cream">
+                  <Image src={i.image} alt="" fill sizes="(min-width: 420px) 160px, 100vw" className="object-cover" />
+                </span>
+                <span className="block px-3 pt-2 font-bold leading-tight">{i.name.replace("Fresas con Crema ", "")}</span>
+                <span className="mt-0.5 mb-2.5 px-3 text-xs text-ink-soft line-clamp-2">{i.desc.replace(/ Con whipped cream\.$/, "")}</span>
               </button>
             ))}
           </div>

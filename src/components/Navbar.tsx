@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { navLinks } from "@/lib/data";
 import { useBusiness } from "@/components/BusinessProvider";
 import { useCart } from "@/lib/cart";
@@ -47,10 +47,24 @@ export default function Navbar() {
   const pathname = usePathname();
   const { count } = useCart();
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
+  // Slides away while scrolling down so it never covers the page; any scroll up brings it back
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - last) < 6) return;
+      setHidden(y > last && y > 120);
+      last = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 h-24 sm:h-28">
+    <header className={`sticky top-0 z-40 h-24 sm:h-28 transition-transform duration-300 ${hidden && !open ? "-translate-y-[calc(100%+1rem)]" : ""}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-3 flex items-start gap-4">
         <Logo className="w-18 h-18 sm:w-28 sm:h-28" />
 

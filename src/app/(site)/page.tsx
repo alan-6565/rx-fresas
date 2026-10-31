@@ -2,16 +2,12 @@ import Link from "next/link";
 import { business, money } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { getSitePhotos } from "@/lib/site-photos";
-import { getMenu, getSpots } from "@/lib/catalog";
-import { hoursSummary, mapsUrl } from "@/lib/schedule";
+import { getMenu } from "@/lib/catalog";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
 import { Handle, Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
 import { Reveal } from "@/components/Reveal";
-import { AntojoTeaser } from "@/components/antojo/AntojoTeaser";
-import { TruckNow } from "@/components/TruckNow";
 import {
-  ClockIcon,
   CupIcon,
   HeartDoodle,
   LeafIcon,
@@ -48,11 +44,7 @@ const features = [
 ];
 
 export default async function Home() {
-  const [{ categories, items }, spots, photos] = await Promise.all([
-    getMenu(),
-    getSpots(),
-    getSitePhotos(),
-  ]);
+  const [{ categories, items }, photos] = await Promise.all([getMenu(), getSitePhotos()]);
   // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
   // (one card per photo, so two sizes of the same cup don't show twice)
   const cafes = (
@@ -136,36 +128,6 @@ export default async function Home() {
           ))}
           <LoveNote className="hidden lg:block text-2xl pl-6" />
         </div>
-      </section>
-
-      {/* Crea tu antojo */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-20">
-        <Reveal className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blush via-cream to-[#fde7e3] border border-line px-6 py-12 sm:px-14 grid gap-10 lg:grid-cols-[1.2fr_1fr] items-center">
-          <StrawberryIcon className="rx-float absolute left-6 top-6 w-12 h-12 text-rose/25" />
-          <HeartDoodle className="rx-float absolute bottom-8 left-1/3 w-10 h-10 text-rose/20 [animation-delay:-2s]" />
-          <div className="relative">
-            <p className="font-semibold tracking-[0.3em] text-sm text-rose">
-              NUEVO ♡ CREA TU ANTOJO
-            </p>
-            <h2 className="mt-3 font-hand text-6xl sm:text-8xl leading-[0.9]">
-              Un antojo hecho <span className="text-rose">a tu gusto.</span>
-            </h2>
-            <p className="mt-5 max-w-md text-lg text-ink-soft">
-              Elige tu vaso, tu crema, tus drizzles y tus toppings, y mira cómo
-              queda antes de pedirlo.
-            </p>
-            <Button href="/crea-tu-antojo" className="mt-8 text-lg">
-              Crea el tuyo
-            </Button>
-          </div>
-          <Link
-            href="/crea-tu-antojo"
-            aria-label="Crea tu antojo"
-            className="relative mx-auto w-full max-w-[300px] sm:max-w-[340px] transition-transform hover:-rotate-2 hover:scale-[1.03]"
-          >
-            <AntojoTeaser />
-          </Link>
-        </Reveal>
       </section>
 
       {/* Menu preview */}
@@ -278,48 +240,6 @@ export default async function Home() {
           <div className="absolute -bottom-8 -left-4 sm:-left-10 rounded-2xl bg-blush px-6 py-4 shadow-lg">
             <LoveNote className="text-2xl" />
           </div>
-        </div>
-      </section>
-
-      {/* Locations */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-28 text-center">
-        <Heading sub="¡Ven por tu antojo favorito! ♥">
-          Dónde Nos Encontrarás
-        </Heading>
-        <TruckNow spots={spots} className="mt-8 mx-auto max-w-3xl" />
-        <div className="mt-10 grid sm:grid-cols-2 gap-6 text-left">
-          {spots.map((l) => (
-            <article
-              key={l.id}
-              className="rounded-3xl bg-white border border-line shadow-sm overflow-hidden"
-            >
-              <Photo
-                slot={`spot:${l.id}`}
-                src={l.image}
-                alt={`Food truck en ${l.name}`}
-                className="aspect-[2.2/1]"
-              />
-              <div className="p-5 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h3 className="flex items-center gap-2 text-xl font-bold">
-                    <PinIcon className="w-6 h-6 text-rose" /> {l.name}
-                  </h3>
-                  <p className="text-ink-soft ml-8">{l.city}</p>
-                  {hoursSummary(l.hours).map((h) => (
-                    <p
-                      key={h}
-                      className="mt-1 flex items-center gap-2 text-sm ml-8"
-                    >
-                      <ClockIcon className="w-4 h-4 shrink-0" /> {h}
-                    </p>
-                  ))}
-                </div>
-                <Button href={mapsUrl(l)} className="text-sm px-5 py-2.5">
-                  Cómo llegar
-                </Button>
-              </div>
-            </article>
-          ))}
         </div>
       </section>
 

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { money, toppings } from "@/lib/data";
+import { isFresa, money, toppings } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { getMenu } from "@/lib/catalog";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
+import { FresasCard } from "@/components/antojo/FresasCard";
 import { CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Menú — R&X Fresas con Crema" };
@@ -43,12 +44,15 @@ function Toppings() {
 }
 
 export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
-  const [{ cat }, menu] = await Promise.all([searchParams, getMenu()]);
+  const [{ cat, crear }, menu] = await Promise.all([searchParams, getMenu()]);
   // Empty categories stay off the menu, except Extras, which explains the toppings
   const categories = menu.categories.filter((c) => c.id === "extras" || menu.items.some((i) => i.category === c.id));
   const current = categories.find((c) => c.id === cat) ?? categories[0];
   const active = current?.id;
-  const list = menu.items.filter((i) => i.category === active);
+  const inCat = menu.items.filter((i) => i.category === active);
+  // The fresas styles are one card that opens the builder
+  const cups = inCat.filter(isFresa);
+  const list = inCat.filter((i) => !isFresa(i));
 
   return (
     <PageTop>
@@ -87,10 +91,11 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
           </svg>
         </h2>
 
-        {list.length === 0 ? (
+        {inCat.length === 0 ? (
           <p className="mt-4 text-lg text-ink-soft">Personaliza tus fresas y mini pancakes con tus toppings favoritos. Pregunta por los precios en el truck.</p>
         ) : (
           <div className="mt-8 grid md:grid-cols-2 gap-5">
+            {cups.length > 0 && <FresasCard key={String(crear)} cups={cups} autoOpen={crear === "1"} />}
             {list.map((item) => (
               <article key={item.id} className="flex items-center gap-5 rounded-3xl bg-white border border-line p-3 pr-5 shadow-sm">
                 <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shrink-0" sizes="128px" />

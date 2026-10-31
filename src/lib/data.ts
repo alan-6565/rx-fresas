@@ -9,7 +9,6 @@ export const business = {
 export const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/menu", label: "Menú" },
-  { href: "/crea-tu-antojo", label: "Crea tu Antojo" },
   { href: "/nosotros", label: "Sobre Nosotros" },
   { href: "/ubicaciones", label: "Ubicaciones" },
   { href: "/galeria", label: "Galería" },
@@ -95,5 +94,8 @@ export const gallery = [
   "/images/p-15.jpg",
   "/images/truck-portal.jpg",
 ];
+
+/** True for the fresas con crema cups, which order through the builder */
+export const isFresa = (item: { category: string; options?: unknown[] }) => item.category === "fresas" && !!item.options?.length;
 
 export const money = (n: number) => `$${n.toFixed(2)}`;
