@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { isFresa } from "@/lib/data";
 import { Builder } from "@/components/antojo/Builder";
@@ -36,4 +36,10 @@ export function BuilderSheet({ initialId, onClose }: { initialId?: string; onClo
       </div>
     </div>
   );
+}
+
+/** Opens the builder right away (old /crea-tu-antojo links land here) */
+export function BuilderOnLoad() {
+  const [open, setOpen] = useState(true);
+  return open ? <BuilderSheet onClose={() => setOpen(false)} /> : null;
 }

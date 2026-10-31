@@ -1,12 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { isFresa, money, toppings } from "@/lib/data";
-import { hasRequiredUpcharge } from "@/lib/options";
+import { toppings } from "@/lib/data";
 import { getMenu } from "@/lib/catalog";
-import { Heading, PageTop, Photo } from "@/components/ui";
-import { AddButton } from "@/components/AddButton";
-import { FresasCard } from "@/components/antojo/FresasCard";
-import { CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/components/icons";
+import { MenuHero } from "@/components/menu/MenuHero";
+import { MenuItems } from "@/components/menu/MenuItems";
+import { BuilderOnLoad } from "@/components/antojo/BuilderSheet";
+import { BoltIcon, CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Menú — R&X Fresas con Crema" };
 
@@ -16,8 +15,10 @@ const ICONS: Record<string, typeof CupIcon> = {
   fresas: StrawberryIcon,
   pancakes: PancakeIcon,
   otono: LeafIcon,
+  redbulls: BoltIcon,
   extras: SparkleIcon,
 };
+const BADGES: Record<string, string> = { otono: "Temporada" };
 
 function Toppings() {
   return (
@@ -25,7 +26,7 @@ function Toppings() {
       <h2 className="font-hand text-5xl leading-none text-ink">
         Agrega tus <br className="hidden md:block" />
         Toppings <span className="text-rose">♡</span>
-        <span className="mt-3 block font-ui text-base text-ink-soft">Dinos tus favoritos en las notas de tu pedido.</span>
+        <span className="mt-3 block font-ui text-base text-ink-soft">Elígelos al personalizar tu orden.</span>
       </h2>
       <div className="grid sm:grid-cols-[auto_auto_1fr] gap-8">
         {toppings.map((t) => (
@@ -49,71 +50,42 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
   const categories = menu.categories.filter((c) => c.id === "extras" || menu.items.some((i) => i.category === c.id));
   const current = categories.find((c) => c.id === cat) ?? categories[0];
   const active = current?.id;
-  const inCat = menu.items.filter((i) => i.category === active);
-  // The fresas styles are one card that opens the builder
-  const cups = inCat.filter(isFresa);
-  const list = inCat.filter((i) => !isFresa(i));
 
   return (
-    <PageTop>
-      <div className="text-center">
-        <Heading as="h1" sub="Bebidas, antojos y favoritos para cada momento.">
-          Nuestro Menú
-        </Heading>
+    <>
+      <MenuHero />
+      <div className="mx-auto max-w-7xl px-4 sm:px-8">
+        <nav
+          className="relative z-10 -mt-14 flex gap-3 overflow-x-auto no-scrollbar px-1 pb-3 pt-4 lg:grid"
+          style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}
+        >
+          {categories.map((c) => {
+            const Icon = ICONS[c.id] ?? SparkleIcon;
+            const on = c.id === active;
+            return (
+              <Link
+                key={c.id}
+                href={`/menu?cat=${c.id}`}
+                scroll={false}
+                className={`relative shrink-0 min-w-36 flex flex-col items-center gap-2 rounded-2xl border px-5 py-4 font-bold transition-all hover:-translate-y-0.5 ${
+                  on ? "bg-rose border-rose text-white shadow-lg shadow-rose/30" : "bg-white/90 border-white text-ink shadow-[0_6px_20px_rgba(232,80,106,0.10)] backdrop-blur hover:text-rose"
+                }`}
+              >
+                {BADGES[c.id] && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-rose px-2.5 py-0.5 text-[11px] font-bold text-white shadow">{BADGES[c.id]}</span>
+                )}
+                <Icon className="w-8 h-8" />
+                {c.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <MenuItems title={current?.title ?? "Pronto"} items={menu.items.filter((i) => i.category === active)} all={menu.items} />
+
+        <Toppings />
       </div>
-
-
-      <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
-        {categories.map((c) => {
-          const Icon = ICONS[c.id] ?? SparkleIcon;
-          const on = c.id === active;
-          return (
-            <Link
-              key={c.id}
-              href={`/menu?cat=${c.id}`}
-              scroll={false}
-              className={`shrink-0 min-w-36 flex flex-col items-center gap-2 rounded-2xl border px-5 py-4 font-semibold transition-colors ${
-                on ? "bg-rose border-rose text-white shadow-md" : "bg-white border-line hover:border-rose hover:text-rose"
-              }`}
-            >
-              <Icon className="w-8 h-8" />
-              {c.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <section className="mt-12">
-        <h2 className="font-hand text-5xl text-ink flex items-center gap-3">
-          {current?.title ?? "Pronto"}
-          <svg viewBox="0 0 60 12" className="w-14 h-3 text-rose" fill="none">
-            <path d="M2 8c8-6 14 4 22-1s14-5 22 0 10 2 12-1" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          </svg>
-        </h2>
-
-        {inCat.length === 0 ? (
-          <p className="mt-4 text-lg text-ink-soft">Personaliza tus fresas y mini pancakes con tus toppings favoritos. Pregunta por los precios en el truck.</p>
-        ) : (
-          <div className="mt-8 grid md:grid-cols-2 gap-5">
-            {cups.length > 0 && <FresasCard key={String(crear)} cups={cups} autoOpen={crear === "1"} />}
-            {list.map((item) => (
-              <article key={item.id} className="flex items-center gap-5 rounded-3xl bg-white border border-line p-3 pr-5 shadow-sm">
-                <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shrink-0" sizes="128px" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="font-bold text-lg leading-tight">{item.name}</h3>
-                    <span className="font-bold text-rose">{hasRequiredUpcharge({ price: item.price, options: item.options ?? [] }) && "Desde "}{money(item.price)}</span>
-                  </div>
-                  <p className="mt-1 text-ink-soft">{item.desc}</p>
-                  <AddButton id={item.id} className="mt-3" />
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <Toppings />
-    </PageTop>
+      {crear === "1" && <BuilderOnLoad />}
+    </>
   );
 }

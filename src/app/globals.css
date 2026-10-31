@@ -123,8 +123,31 @@ body {
     transform: translateY(-10px) rotate(4deg);
   }
 }
+/* Menu banner: words rise in, the swirl photo slowly breathes */
+.rx-hero-in {
+  animation: rx-hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes rx-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+.rx-drift {
+  animation: rx-drift 18s ease-in-out infinite alternate;
+}
+@keyframes rx-drift {
+  from {
+    transform: scale(1.04) translateX(-1%);
+  }
+  to {
+    transform: scale(1.12) translateX(1%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .rx-pop,
+  .rx-hero-in,
+  .rx-drift,
   .rx-fade,
   .rx-draw,
   .rx-float {
