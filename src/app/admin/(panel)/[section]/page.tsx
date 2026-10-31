@@ -8,7 +8,6 @@ const SOON: Record<string, string> = {
   promotions: "Create banners, seasonal menus and specials for the website.",
   customers: "See who orders most and who keeps coming back.",
   analytics: "Sales, busiest hours and best sellers over time.",
-  settings: "Business info, password, notifications and payment settings.",
 };
 
 export default async function ComingSoon({ params }: PageProps<"/admin/[section]">) {

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { business } from "@/lib/data";
+import { getBusinessInfo } from "@/lib/business-info";
+import { socialLinks } from "@/lib/business";
 import { getSitePhotos } from "@/lib/site-photos";
 import { Heading, PageTop, Photo } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Galería — R&X Fresas con Crema" };
 
 export default async function GalleryPage() {
-  const { gallery } = await getSitePhotos();
+  const [{ gallery }, info] = await Promise.all([getSitePhotos(), getBusinessInfo()]);
   return (
     <PageTop>
       <div className="text-center">
-        <Heading as="h1" sub={`Un poquito de lo que preparamos. Más fotos en ${business.handle} ♥`}>
+        <Heading as="h1" sub={`Un poquito de lo que preparamos. Más fotos en ${socialLinks(info).handle} ♥`}>
           Galería
         </Heading>
       </div>

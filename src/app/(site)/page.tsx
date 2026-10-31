@@ -5,7 +5,7 @@ import { getSitePhotos } from "@/lib/site-photos";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { hoursSummary, mapsUrl } from "@/lib/schedule";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
-import { Socials } from "@/components/Navbar";
+import { Handle, Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
 import { Reveal } from "@/components/Reveal";
 import { AntojoTeaser } from "@/components/antojo/AntojoTeaser";
@@ -337,7 +337,7 @@ export default async function Home() {
           <div className="mt-6 flex justify-center gap-6 text-ink">
             <Socials className="w-8 h-8" />
           </div>
-          <p className="mt-3 font-semibold text-rose">{business.handle}</p>
+          <p className="mt-3 font-semibold text-rose"><Handle /></p>
         </div>
       </section>
     </>

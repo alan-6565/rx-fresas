@@ -4,10 +4,6 @@ export const business = {
   name: "R&X Fresas con Crema",
   city: "Richmond, CA",
   tagline: "Bebidas, antojos y momentos más dulces para tu día.",
-  handle: "@rx_fresasconcrema",
-  instagram: "https://www.instagram.com/rx_fresasconcrema",
-  tiktok: "https://www.tiktok.com/@rx_fresasconcrema",
-  facebook: "https://www.facebook.com/search/top?q=R%26X%20Fresas%20con%20Crema",
 };
 
 export const navLinks = [

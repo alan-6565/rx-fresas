@@ -3,20 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { CameraIcon } from "@/components/admin/icons";
-
-/**
- * Shrinks a phone photo to 1400px JPEG in the browser before it's sent, so it
- * uploads fast from the truck and stays under the server's size limit.
- */
-async function shrink(file: File, max = 1400): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Couldn't read that photo"))), "image/jpeg", 0.85));
-}
+import { shrink } from "@/lib/shrink";
 
 export function PhotoPicker({ value, onChange, folder, aspect = "aspect-[4/3]" }: { value: string; onChange: (url: string) => void; folder: "menu" | "locations" | "site"; aspect?: string }) {
   const input = useRef<HTMLInputElement>(null);
@@ -29,7 +16,7 @@ export function PhotoPicker({ value, onChange, folder, aspect = "aspect-[4/3]" }
     setError("");
     try {
       const form = new FormData();
-      form.append("file", new File([await shrink(file)], "photo.jpg", { type: "image/jpeg" }));
+      form.append("file", await shrink(file));
       form.append("folder", folder);
       const res = await fetch("/api/admin/upload", { method: "POST", body: form });
       const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };

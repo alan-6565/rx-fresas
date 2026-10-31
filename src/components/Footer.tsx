@@ -2,7 +2,7 @@ import Link from "next/link";
 import { business, navLinks } from "@/lib/data";
 import { getSpots } from "@/lib/catalog";
 import { hoursSummary } from "@/lib/schedule";
-import { Logo, Socials } from "@/components/Navbar";
+import { Handle, Logo, Socials } from "@/components/Navbar";
 import { ClockIcon, PinIcon } from "@/components/icons";
 
 export default async function Footer() {
@@ -39,7 +39,7 @@ export default async function Footer() {
         </div>
       </div>
       <div className="border-t border-cream/10 py-4 text-center text-xs text-cream/50">
-        © {business.name} · {business.city} · {business.handle}
+        © {business.name} · {business.city} · <Handle />
       </div>
     </footer>
   );

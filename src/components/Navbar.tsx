@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { business, navLinks } from "@/lib/data";
+import { navLinks } from "@/lib/data";
+import { useBusiness } from "@/components/BusinessProvider";
 import { useCart } from "@/lib/cart";
 import { ArrowRightIcon, BagIcon, CloseIcon, FacebookIcon, InstagramIcon, MenuIcon, TikTokIcon } from "@/components/icons";
 
@@ -17,19 +18,29 @@ export function Logo({ className = "w-24 h-24" }: { className?: string }) {
 }
 
 export function Socials({ className = "w-5 h-5" }: { className?: string }) {
+  const links = useBusiness();
   return (
     <>
-      <a href={business.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-rose">
+      <a href={links.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-rose">
         <InstagramIcon className={className} />
       </a>
-      <a href={business.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok" className="hover:text-rose">
-        <TikTokIcon className={className} />
-      </a>
-      <a href={business.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-rose">
-        <FacebookIcon className={className} />
-      </a>
+      {links.tiktok && (
+        <a href={links.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok" className="hover:text-rose">
+          <TikTokIcon className={className} />
+        </a>
+      )}
+      {links.facebook && (
+        <a href={links.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-rose">
+          <FacebookIcon className={className} />
+        </a>
+      )}
     </>
   );
+}
+
+/** "@rx_fresasconcrema", for server pages that show the handle */
+export function Handle() {
+  return <>{useBusiness().handle}</>;
 }
 
 export default function Navbar() {
