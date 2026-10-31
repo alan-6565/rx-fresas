@@ -84,6 +84,6 @@ if (!accountId) {
 const returnUrl = process.argv[2] ?? "http://localhost:3011/";
 const link = await stripeV2("POST", "/v2/core/account_links", {
   account: accountId,
-  use_case: { type: "account_onboarding", account_onboarding: { return_url: returnUrl, refresh_url: returnUrl, configurations: ["merchant"] } },
+  use_case: { type: "account_onboarding", account_onboarding: { return_url: returnUrl, refresh_url: returnUrl } },
 });
 console.log(`\nSign-up link for R&X (expires soon, run again for a new one):\n${link.url}`);
