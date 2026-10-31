@@ -43,8 +43,8 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-3 flex items-start gap-4">
         <Logo className="w-18 h-18 sm:w-28 sm:h-28" />
 
-        <div className="flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 lg:pl-6 pr-2">
-          <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
+        <div className="flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 xl:pl-6 pr-2">
+          <nav className="hidden xl:flex items-center gap-1 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -55,7 +55,7 @@ export default function Navbar() {
               </Link>
             ))}
           </nav>
-          <button onClick={() => setOpen((o) => !o)} aria-label={open ? "Cerrar menú" : "Abrir menú"} className="lg:hidden p-2">
+          <button onClick={() => setOpen((o) => !o)} aria-label={open ? "Cerrar menú" : "Abrir menú"} className="xl:hidden p-2">
             {open ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
 
@@ -81,7 +81,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <nav className="lg:hidden mx-4 mt-2 rounded-3xl bg-cream shadow-xl p-3 flex flex-col">
+        <nav className="xl:hidden mx-4 mt-2 rounded-3xl bg-cream shadow-xl p-3 flex flex-col">
           {navLinks.map((link) => (
             <Link
               key={link.href}

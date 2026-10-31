@@ -13,6 +13,7 @@ export const business = {
 export const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/menu", label: "Menú" },
+  { href: "/crea-tu-antojo", label: "Crea tu Antojo" },
   { href: "/nosotros", label: "Sobre Nosotros" },
   { href: "/ubicaciones", label: "Ubicaciones" },
   { href: "/galeria", label: "Galería" },

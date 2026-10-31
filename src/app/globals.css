@@ -71,3 +71,71 @@ body {
 .rx-pin strong {
   font-size: 13px;
 }
+
+/* Crea tu antojo: the cup reacts to every pick */
+.rx-ease {
+  transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1), fill 0.35s ease;
+}
+.rx-pop {
+  animation: rx-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-box: fill-box;
+}
+@keyframes rx-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.6);
+  }
+}
+.rx-fade {
+  animation: rx-fade 0.4s ease both;
+}
+@keyframes rx-fade {
+  from {
+    opacity: 0;
+  }
+}
+.rx-draw {
+  stroke-dasharray: 260;
+  animation: rx-draw 0.7s ease-out both;
+}
+@keyframes rx-draw {
+  from {
+    stroke-dashoffset: 260;
+  }
+}
+/* Sections that slide up as they come into view (see components/Reveal.tsx) */
+.rx-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rx-reveal.rx-in {
+  opacity: 1;
+  transform: none;
+}
+.rx-float {
+  animation: rx-float 6s ease-in-out infinite;
+}
+@keyframes rx-float {
+  50% {
+    transform: translateY(-10px) rotate(4deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rx-pop,
+  .rx-fade,
+  .rx-draw,
+  .rx-float {
+    animation: none;
+  }
+  .rx-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .rx-ease {
+    transition: none;
+  }
+}
