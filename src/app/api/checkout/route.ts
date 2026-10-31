@@ -85,6 +85,9 @@ export async function POST(req: NextRequest) {
     {
       mode: "payment",
       locale: "es",
+      // The card fee line is priced for Stripe's card rate; Klarna, bank and
+      // the rest cost more. Apple Pay and Google Pay are cards, so they stay.
+      payment_method_types: ["card"],
       line_items: [
         ...lines.map(({ item, qty }) => ({
           quantity: qty,
