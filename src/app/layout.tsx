@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Caveat_Brush, DM_Sans, Kaushan_Script } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { CartProvider } from "@/lib/cart";
 
 const caveatBrush = Caveat_Brush({
   variable: "--font-hand",
@@ -32,11 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className={`${caveatBrush.variable} ${kaushan.variable} ${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-cream text-ink font-ui">
-        <CartProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </CartProvider>
+        {children}
       </body>
     </html>
   );

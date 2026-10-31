@@ -1,5 +1,6 @@
 -- R&X Fresas con Crema: online orders.
--- Paste into the Supabase SQL Editor and run. Safe to run again.
+-- Paste into the Supabase SQL Editor and run, then each file in migrations/
+-- in order. All of them are safe to run again.
 --
 -- Only the website's server touches these tables (with the secret key), so
 -- row level security is on with no policies: the public API keys can't read

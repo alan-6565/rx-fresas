@@ -1,5 +1,7 @@
 import "server-only";
+import { after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { notifyStaff } from "@/lib/push";
 
 /**
  * The one place an order becomes paid: the webhook and the confirmation page
@@ -15,9 +17,22 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
     })
     .eq("id", orderId)
     .eq("payment_status", "pending")
-    .select("id");
+    .select("order_number, customer_name, item_count, subtotal_cents, pickup_time, location");
   if (error) throw error;
-  return (data?.length ?? 0) > 0;
+
+  const order = data?.[0];
+  if (!order) return false;
+
+  // Only the call that flipped it to paid alerts the truck, so nobody gets it twice
+  after(() =>
+    notifyStaff({
+      title: `New order #${order.order_number}`,
+      body: `${order.customer_name} · ${order.item_count} item${order.item_count === 1 ? "" : "s"} · $${(order.subtotal_cents / 100).toFixed(2)} · ${order.pickup_time} at ${order.location}`,
+      url: "/admin/orders",
+      tag: `order-${order.order_number}`,
+    }),
+  );
+  return true;
 }
 
 export async function cancelUnpaidOrder(orderId: string) {

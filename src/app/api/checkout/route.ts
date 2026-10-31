@@ -3,6 +3,7 @@ import { items as menu, locations, pickupDays, pickupTimes } from "@/lib/data";
 import { quote, type Line } from "@/lib/pricing";
 import { supabaseAdmin } from "@/lib/supabase";
 import { connectedAccountId, stripe } from "@/lib/stripe";
+import { pacificDate } from "@/lib/time";
 
 // Stripe's minimum; an abandoned checkout's order is cancelled when it expires
 const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
       location: body.location,
       pickup_day: body.day,
       pickup_time: body.time,
+      pickup_date: pacificDate(body.day === "Mañana" ? 1 : 0),
       item_count: q.items,
       subtotal_cents: q.subtotal,
       platform_fee_cents: q.platformFee,
