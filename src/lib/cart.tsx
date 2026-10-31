@@ -21,8 +21,8 @@ const STORAGE_KEY = "rx-fresas-cart";
 
 // Pre-loaded like the "Tu Pedido" mockup so checkout looks filled in on first visit
 const STARTER: CartItem[] = [
-  { id: "fresa-especial", qty: 1 },
-  { id: "caramel", qty: 1 },
+  { id: "fresa-original-12", qty: 1 },
+  { id: "malvavisco", qty: 1 },
   { id: "pancakes-15", qty: 1 },
 ];
 

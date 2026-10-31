@@ -24,6 +24,7 @@ function Toppings() {
       <h2 className="font-hand text-5xl leading-none text-ink">
         Agrega tus <br className="hidden md:block" />
         Toppings <span className="text-rose">♡</span>
+        <span className="mt-3 block font-ui text-base text-ink-soft">Dinos tus favoritos en las notas de tu pedido.</span>
       </h2>
       <div className="grid sm:grid-cols-[auto_auto_1fr] gap-8">
         {toppings.map((t) => (

@@ -18,7 +18,10 @@ const features = [
 export default async function Home() {
   const [{ categories, items }, spots] = await Promise.all([getMenu(), getSpots()]);
   // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
-  const cafes = (items.some((i) => i.category === "cafes") ? items.filter((i) => i.category === "cafes") : items).slice(0, 4);
+  // (one card per photo, so two sizes of the same cup don't show twice)
+  const cafes = (items.some((i) => i.category === "cafes") ? items.filter((i) => i.category === "cafes") : items)
+    .filter((item, i, list) => list.findIndex((x) => x.image === item.image) === i)
+    .slice(0, 4);
   const otono = items.filter((i) => i.category === "otono").slice(0, 2);
   const otonoTitle = categories.find((c) => c.id === "otono")?.label ?? "Para el Otoño";
 

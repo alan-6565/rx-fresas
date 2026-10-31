@@ -299,6 +299,23 @@ function CategoryManager({ categories, count, onClose, onChange }: { categories:
     }
   };
 
+  // Swap with the neighbor, then save both positions
+  const move = async (index: number, dir: -1 | 1) => {
+    const other = index + dir;
+    if (other < 0 || other >= list.length) return;
+    const next = [...list];
+    [next[index], next[other]] = [next[other], next[index]];
+    const renumbered = next.map((c, i) => ({ ...c, sort: i + 1 }));
+    update(renumbered);
+    try {
+      await Promise.all(
+        renumbered.map((c) => fetch(`/api/admin/categories/${c.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort: c.sort }) }).then((r) => json(r))),
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   const remove = async (c: Category) => {
     try {
       await json(await fetch(`/api/admin/categories/${c.id}`, { method: "DELETE" }));
@@ -318,11 +335,19 @@ function CategoryManager({ categories, count, onClose, onChange }: { categories:
         </button>
       }
     >
-      <p className="text-sm text-ink-soft">The tab name and the heading customers see on the menu page. Changes save when you leave a box.</p>
+      <p className="text-sm text-ink-soft">The tab name and the heading customers see on the menu page. Changes save when you leave a box; ▲▼ sets the order.</p>
       {error && <p className="text-sm text-rose-700">{error}</p>}
-      {list.map((c) => (
+      {list.map((c, index) => (
         <div key={c.id} className="rounded-xl border border-line bg-white p-3 space-y-2">
           <div className="flex items-center gap-2">
+            <span className="flex flex-col">
+              <button onClick={() => move(index, -1)} disabled={index === 0} aria-label={`Move ${c.label} up`} className="px-1 leading-none text-ink-soft disabled:opacity-30">
+                ▲
+              </button>
+              <button onClick={() => move(index, 1)} disabled={index === list.length - 1} aria-label={`Move ${c.label} down`} className="px-1 leading-none text-ink-soft disabled:opacity-30">
+                ▼
+              </button>
+            </span>
             <input defaultValue={c.label} onBlur={(e) => e.target.value.trim() !== c.label && rename(c, { label: e.target.value })} aria-label="Tab name" className={field} />
             <button
               onClick={() => remove(c)}

@@ -73,10 +73,14 @@ export const items: Item[] = [
   { id: "calabaza", name: "Dulce Calabaza Latte", price: 7, desc: "Café, leche, pumpkin spice y crema", image: "/images/o-calabaza.jpg", category: "otono" },
 ];
 
+// From the truck's menus (fresas and mini pancakes share them)
 export const toppings = [
   { group: "Frutas", list: ["Fresa", "Plátano"] },
-  { group: "Drizzles", list: ["Nutella", "Lechera", "Syrup"] },
-  { group: "Toppings", list: ["M&Ms", "Azúcar en polvo", "Almendras", "Oreo triturado", "KitKat triturado", "Chocolate chips", "Biscoff triturado"] },
+  { group: "Drizzles", list: ["Nutella", "Lechera", "Syrup", "Pistacho"] },
+  {
+    group: "Toppings",
+    list: ["M&Ms", "Azúcar en polvo", "Coco rallado", "Almendras", "Granola", "Oreo triturado", "KitKat triturado", "Chocolate chips", "Biscoff triturado"],
+  },
 ];
 
 export const gallery = [

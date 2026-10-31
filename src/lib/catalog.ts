@@ -73,7 +73,10 @@ export const getMenu = cache(async (): Promise<Menu> => {
   ]);
   if (cats.error) throw cats.error;
   if (rows.error) throw rows.error;
-  return { categories: cats.data, items: (rows.data as MenuItemRow[]).map(toItem) };
+  // Items follow their category's order, so "first on the menu" means the same everywhere
+  const rank = (id: string) => cats.data.findIndex((c) => c.id === id);
+  const items = (rows.data as MenuItemRow[]).sort((a, b) => rank(a.category_id) - rank(b.category_id) || a.sort - b.sort);
+  return { categories: cats.data, items: items.map(toItem) };
 });
 
 /** Spots shown on the website and offered for pickup */

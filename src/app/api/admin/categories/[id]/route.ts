@@ -4,8 +4,9 @@ import { bad, refreshSite } from "@/lib/admin-catalog";
 
 export async function PATCH(req: NextRequest, { params }: RouteContext<"/api/admin/categories/[id]">) {
   const { id } = await params;
-  const { label, title } = (await req.json().catch(() => ({}))) as { label?: string; title?: string };
-  const fields: Record<string, string> = {};
+  const { label, title, sort } = (await req.json().catch(() => ({}))) as { label?: string; title?: string; sort?: number };
+  const fields: Record<string, string | number> = {};
+  if (Number.isInteger(sort)) fields.sort = sort as number;
   if (label !== undefined) fields.label = label.trim().slice(0, 40);
   if (title !== undefined) fields.title = title.trim().slice(0, 60);
   if (fields.label === "" || fields.title === "") return bad("Names can't be empty.");
