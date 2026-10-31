@@ -12,6 +12,7 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
     .from("orders")
     .update({
       payment_status: "paid",
+      paid_at: new Date().toISOString(),
       ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
       ...(email ? { customer_email: email } : {}),
     })
@@ -27,12 +28,18 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
   after(() =>
     notifyStaff({
       title: `New order #${order.order_number}`,
-      body: `${order.customer_name} · ${order.item_count} item${order.item_count === 1 ? "" : "s"} · $${(order.subtotal_cents / 100).toFixed(2)} · ${order.pickup_time} at ${order.location}`,
+      body: orderSummary(order),
       url: "/admin/orders",
       tag: `order-${order.order_number}`,
     }),
   );
   return true;
+}
+
+type SummaryFields = { customer_name: string; item_count: number; subtotal_cents: number; pickup_time: string; location: string };
+
+export function orderSummary(o: SummaryFields) {
+  return `${o.customer_name} · ${o.item_count} item${o.item_count === 1 ? "" : "s"} · $${(o.subtotal_cents / 100).toFixed(2)} · ${o.pickup_time} at ${o.location}`;
 }
 
 export async function cancelUnpaidOrder(orderId: string) {

@@ -110,3 +110,13 @@ export async function turnOnPush(): Promise<PushState> {
   });
   return res.ok ? "on" : "off";
 }
+
+/** Once an order is handled on this device, take its banners off the screen */
+export async function clearOrderBanners(orderNumber: number) {
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration("/admin");
+    for (const n of (await reg?.getNotifications()) ?? []) if (n.data?.group === `order-${orderNumber}`) n.close();
+  } catch {
+    // notifications not supported here
+  }
+}

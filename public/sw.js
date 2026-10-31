@@ -8,26 +8,44 @@ self.addEventListener("push", (event) => {
   } catch {
     data = { title: "New order", body: event.data ? event.data.text() : "" };
   }
+  // Reminders for the same order replace the last banner. Closing it first and
+  // showing a new one (instead of reusing the tag) makes it sound again.
   event.waitUntil(
-    self.registration.showNotification(data.title || "New order", {
-      body: data.body || "",
-      tag: data.tag,
-      icon: "/images/admin-icon-192.png",
-      badge: "/images/admin-icon-192.png",
-      data: { url: data.url || "/admin/orders" },
-      requireInteraction: true,
-    }),
+    self.registration
+      .getNotifications()
+      .then((open) =>
+        open.forEach(
+          (n) => data.tag && n.data?.group === data.tag && n.close(),
+        ),
+      )
+      .then(() =>
+        self.registration.showNotification(data.title || "New order", {
+          body: data.body || "",
+          tag: data.tag ? `${data.tag}-${Date.now()}` : undefined,
+          icon: "/images/admin-icon-192.png",
+          badge: "/images/admin-icon-192.png",
+          data: { url: data.url || "/admin/orders", group: data.tag },
+          requireInteraction: true,
+        }),
+      ),
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = new URL(event.notification.data?.url || "/admin/orders", self.location.origin).href;
+  const url = new URL(
+    event.notification.data?.url || "/admin/orders",
+    self.location.origin,
+  ).href;
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
-      const open = wins.find((w) => w.url.startsWith(self.location.origin + "/admin"));
-      if (open) return open.focus().then((w) => w && w.navigate(url));
-      return self.clients.openWindow(url);
-    }),
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((wins) => {
+        const open = wins.find((w) =>
+          w.url.startsWith(self.location.origin + "/admin"),
+        );
+        if (open) return open.focus().then((w) => w && w.navigate(url));
+        return self.clients.openWindow(url);
+      }),
   );
 });

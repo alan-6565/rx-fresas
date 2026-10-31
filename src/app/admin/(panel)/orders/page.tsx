@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { money } from "@/lib/data";
 import { RANGES, type Range, type StaffOrder } from "@/lib/order-types";
-import { isIOS, playChime, pushState, soundOn, startAlerts, turnOnPush, type PushState } from "@/lib/alerts";
+import { clearOrderBanners, isIOS, playChime, pushState, soundOn, startAlerts, turnOnPush, type PushState } from "@/lib/alerts";
 import { Card, PageHeader, STATUS, StatusPill, type Status } from "@/components/admin/ui";
 import { BagIcon, BellIcon, CloseIcon, PhoneIcon, SearchIcon } from "@/components/admin/icons";
 
@@ -111,6 +111,10 @@ export default function OrdersPage() {
     setBusyId(id);
     const res = await fetch(`/api/admin/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
     if (!res.ok) setError(((await res.json().catch(() => ({}))) as { error?: string }).error ?? "Couldn't update that order");
+    else {
+      const num = orders?.find((o) => o.id === id)?.order_number;
+      if (num) clearOrderBanners(num);
+    }
     await load();
     setBusyId(null);
   };
