@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { business, locations, money } from "@/lib/data";
+import { locations, money } from "@/lib/data";
+import { PLATFORM_FEE_PER_ITEM, TAX_RATE, quote } from "@/lib/pricing";
 import { useCart } from "@/lib/cart";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AppleIcon, CalendarIcon, ClockIcon, HeartSolid, LockIcon, TrashIcon } from "@/components/icons";
@@ -42,8 +43,9 @@ export default function OrderPage() {
   const [notes, setNotes] = useState("");
   const [placed, setPlaced] = useState<null | { total: number; name: string; when: string }>(null);
 
-  const fee = cart.count > 0 ? business.serviceFee : 0;
-  const total = cart.subtotal + fee;
+  // Cents, priced from menu ids the same way the server will charge them
+  const q = quote(cart.lines.map(({ id, qty }) => ({ id, qty })));
+  const total = q.total / 100;
   const ready = cart.count > 0 && name.trim() !== "" && phone.trim() !== "";
 
   const pay = () => {
@@ -196,11 +198,24 @@ export default function OrderPage() {
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
-              <dd>{money(cart.subtotal)}</dd>
+              <dd>{money(q.subtotal / 100)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt>Tarifa de servicio</dt>
-              <dd>{money(fee)}</dd>
+              <dt>Impuestos ({(TAX_RATE * 100).toFixed(2)}%)</dt>
+              <dd>{money(q.tax / 100)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>
+                Tarifa de servicio
+                <span className="block text-xs text-ink-soft">
+                  {money(PLATFORM_FEE_PER_ITEM / 100)} × {q.items} {q.items === 1 ? "artículo" : "artículos"}
+                </span>
+              </dt>
+              <dd>{money(q.platformFee / 100)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>Procesamiento de tarjeta</dt>
+              <dd>{money(q.cardFee / 100)}</dd>
             </div>
             <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
               <dt>Total</dt>

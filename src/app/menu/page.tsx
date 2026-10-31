@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { categories, items, money, toppings, type CategoryId } from "@/lib/data";
+import { PLATFORM_FEE_PER_ITEM } from "@/lib/pricing";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
 import { CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/components/icons";
@@ -52,7 +53,12 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
         </Heading>
       </div>
 
-      <nav className="mt-10 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-5">
+      <p className="mx-auto mt-6 max-w-2xl rounded-2xl bg-blush px-5 py-3 text-center text-sm text-ink">
+        <strong>Pedidos en línea:</strong> se agrega una tarifa de servicio de {money(PLATFORM_FEE_PER_ITEM / 100)} por artículo, el procesamiento de tarjeta y
+        los impuestos. Los precios del menú son los mismos que en el truck.
+      </p>
+
+      <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-5">
         {categories.map((c) => {
           const Icon = ICONS[c.id];
           const on = c.id === active;

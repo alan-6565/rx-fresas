@@ -6,7 +6,6 @@ export const business = {
   instagram: "https://www.instagram.com/rx_fresasconcrema",
   tiktok: "https://www.tiktok.com/@rx_fresasconcrema",
   facebook: "https://www.facebook.com/search/top?q=R%26X%20Fresas%20con%20Crema",
-  serviceFee: 0.5,
 };
 
 export const navLinks = [

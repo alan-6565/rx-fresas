@@ -8,7 +8,6 @@ export type CartItem = { id: string; qty: number };
 type CartContextValue = {
   lines: (CartItem & { name: string; desc: string; image: string; price: number })[];
   count: number;
-  subtotal: number;
   add: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   clear: () => void;
@@ -52,7 +51,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value: CartContextValue = {
     lines,
     count: lines.reduce((n, i) => n + i.qty, 0),
-    subtotal: lines.reduce((n, i) => n + i.price * i.qty, 0),
     add: (id) =>
       setItems((prev) => (prev.some((i) => i.id === id) ? prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i)) : [...prev, { id, qty: 1 }])),
     setQty: (id, qty) => setItems((prev) => (qty < 1 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, qty } : i)))),
