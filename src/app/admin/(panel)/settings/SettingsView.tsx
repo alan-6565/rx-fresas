@@ -3,13 +3,12 @@
 import Image from "next/image";
 import { useState } from "react";
 import type { BusinessInfo } from "@/lib/business";
-import { PHOTO_KINDS, newHours, type Answer, type Intake, type PhotoKind } from "@/lib/intake-types";
+import { PHOTO_KINDS, newHours, type Intake, type PhotoKind } from "@/lib/intake-types";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/icons";
 import { TIME_ZONE } from "@/lib/time";
 import { Card, Field, Toggle, btn, field } from "@/components/admin/ui";
 
 const when = (iso: string) => new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-const yes = (v: Answer) => ({ si: "Yes", no: "No", nose: "Not sure yet", "": "—" })[v];
 
 export function SettingsView({ origin, token: firstToken, intake, info, names }: { origin: string; token: string; intake: Intake; info: BusinessInfo; names: Names }) {
   return (
@@ -176,11 +175,9 @@ function ClientAnswers({ intake, names }: { intake: Intake; names: Names }) {
                 <p className="text-sm text-ink-soft">None so far.</p>
               )}
             </Box>
-            <Box title="About us & extras">
+            <Box title="About us & notes">
               <dl className="space-y-2 text-sm">
                 <Line k="Their story" v={a.story} />
-                <Line k="Orders into Square" v={yes(a.square)} />
-                <Line k="Ticket printer" v={yes(a.printer)} />
                 <Line k="Notes" v={a.notes} />
               </dl>
             </Box>

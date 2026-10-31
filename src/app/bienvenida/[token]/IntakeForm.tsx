@@ -294,18 +294,10 @@ export function IntakeForm({ token, initial, spots, menu }: { token: string; ini
 
       {step === 5 && (
         <>
-          <Section icon={<BookIcon />} title="Sobre Nosotros y Extras" sub="Cuéntanos la historia de R&X. ¿Cómo comenzó, qué los inspira y qué los hace especiales?">
+          <Section icon={<BookIcon />} title="Sobre Nosotros" sub="Cuéntanos la historia de R&X. ¿Cómo comenzó, qué los inspira y qué los hace especiales?">
             <textarea value={a.story} onChange={(e) => set({ story: e.target.value })} rows={6} placeholder="Escribe aquí la historia de su negocio… Como lo platicarían, nosotros lo acomodamos." className={input} />
           </Section>
-          <div className="mt-7 flex items-center gap-3">
-            <GearIcon />
-            <h3 className="font-hand text-3xl leading-none">Extras y Preferencias</h3>
-          </div>
-          <div className="mt-3 divide-y divide-line/70">
-            <SwitchRow icon={<SquareIcon />} label="¿Quieren que los pedidos se envíen a Square?" value={a.square} onChange={(square) => set({ square })} />
-            <SwitchRow icon={<PrinterIcon />} label="¿Quieren una impresora de tickets?" value={a.printer} onChange={(printer) => set({ printer })} />
-          </div>
-          <label className="mt-4 block">
+          <label className="mt-5 block">
             <span className="mb-1.5 block text-sm font-semibold">¿Alguna nota o solicitud adicional?</span>
             <textarea value={a.notes} onChange={(e) => set({ notes: e.target.value })} rows={4} placeholder="Ej. ideas, funciones, promociones, etc." className={input} />
           </label>
@@ -348,16 +340,12 @@ function Welcome({ started, onStart }: { started: boolean; onStart: () => void }
   const points = ["Es rápido y sencillo", "Se guarda automáticamente", "Puedes pausar y continuar después", "Nos ayuda a tener todo correcto"];
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8dcdc] via-[#fbeeec] to-cream px-3 py-4 sm:px-6 sm:py-10">
-      <div className="relative mx-auto max-w-3xl overflow-hidden rounded-[2rem] border border-white/70 bg-[#fffaf8] shadow-[0_10px_40px_rgba(232,80,106,0.12)]">
+      <div className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] border border-white/70 bg-[#fffaf8] shadow-[0_10px_40px_rgba(232,80,106,0.12)]">
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-blush to-transparent" />
         <HeartDoodle className="absolute left-6 top-8 w-12 h-12 text-rose/40 -rotate-12" />
         <HeartDoodle className="absolute right-8 top-14 w-10 h-10 text-rose/30 rotate-12" />
-        <div className="relative grid md:grid-cols-[0.85fr_1.15fr]">
-          <div className="relative order-2 h-56 md:order-1 md:h-auto">
-            <Image src="/images/gal-cup.jpg" alt="" fill sizes="(min-width: 768px) 320px, 100vw" className="object-cover md:rounded-tr-[3rem]" priority />
-            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#fffaf8] md:bg-gradient-to-l" />
-          </div>
-          <div className="order-1 px-6 pb-8 pt-8 text-center md:order-2 md:px-10 md:py-12">
+        <div className="relative">
+          <div className="px-6 pb-10 pt-10 text-center md:px-10 md:py-14">
             <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full bg-cream shadow-lg ring-4 ring-white sm:h-36 sm:w-36">
               <Image src="/images/logo-v2.png" alt="R&X Fresas con Crema" fill sizes="144px" className="object-cover" priority />
             </div>
@@ -453,15 +441,6 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (on: boolean) 
   );
 }
 
-function SwitchRow({ icon, label, value, onChange }: { icon: React.ReactNode; label: string; value: Answer; onChange: (v: Answer) => void }) {
-  return (
-    <div className="flex items-center gap-3 py-3.5">
-      <span className="shrink-0 text-ink">{icon}</span>
-      <span className="flex-1 text-sm">{label}</span>
-      <Switch on={value === "si"} onChange={(on) => onChange(on ? "si" : "no")} label={label} />
-    </div>
-  );
-}
 
 function TimeSelect({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
   return (
@@ -698,26 +677,6 @@ const PictureIcon = () => (
 const BookIcon = () => (
   <Svg>
     <path d="M12 6c-2-1.5-5-2-8-1.5V19c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V4.5C17 4 14 4.5 12 6Zm0 0v14.5" />
-  </Svg>
-);
-const GearIcon = () => (
-  <span className="text-rose">
-    <Svg>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3m0 14v3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17m10-10 2.1-2.1" />
-    </Svg>
-  </span>
-);
-const SquareIcon = () => (
-  <Svg className="w-5 h-5">
-    <rect x="4" y="4" width="16" height="16" rx="3" />
-    <rect x="9" y="9" width="6" height="6" rx="1" />
-  </Svg>
-);
-const PrinterIcon = () => (
-  <Svg className="w-5 h-5">
-    <path d="M7 9V3h10v6M7 17H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-3" />
-    <rect x="7" y="14" width="10" height="7" rx="1" />
   </Svg>
 );
 const CloudIcon = () => (
