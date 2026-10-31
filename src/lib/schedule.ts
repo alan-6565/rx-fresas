@@ -198,3 +198,38 @@ export function parseMapLink(text: string): { lat: number; lng: number } | null 
   if (pair) return ok(Number(pair[1]), Number(pair[2]));
   return null;
 }
+
+export type Stop = { spot: Spot; offset: number; start: number; end: number; openNow: boolean };
+
+/**
+ * The truck's stops from now on, soonest first: today's (including one open
+ * right now), then the coming week. Used for "Estamos aquí ahora" and
+ * "Próxima parada".
+ */
+export function upcomingStops(spots: Spot[], now = new Date(), limit = 2): Stop[] {
+  const clock = pacificClock(now);
+  const stops: Stop[] = [];
+  for (let offset = 0; offset < 8 && stops.length < limit; offset++) {
+    const date = pacificDate(offset, now);
+    const day: Stop[] = [];
+    for (const spot of spots) {
+      const d = spot.hours[(clock.weekday + offset) % 7];
+      if (!d?.open || spot.closedOn === date) continue;
+      const start = toMinutes(d.start);
+      const end = toMinutes(d.end);
+      if (offset === 0 && end <= clock.minutes) continue;
+      day.push({ spot, offset, start, end, openNow: offset === 0 && start <= clock.minutes });
+    }
+    stops.push(...day.sort((a, b) => a.start - b.start));
+  }
+  return stops.slice(0, limit);
+}
+
+/** "Hoy, jueves 30 de octubre" / "Mañana, viernes 31 de octubre" / "Sábado 1 de noviembre" */
+export function stopDayLabel(offset: number, now = new Date()) {
+  const date = new Date(now.getTime() + offset * 86_400_000);
+  const text = new Intl.DateTimeFormat("es-MX", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }).format(date).replace(",", "");
+  if (offset === 0) return `Hoy, ${text}`;
+  if (offset === 1) return `Mañana, ${text}`;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
