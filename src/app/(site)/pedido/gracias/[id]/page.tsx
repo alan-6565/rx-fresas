@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { money } from "@/lib/data";
+import { pickedSummary, type Picked } from "@/lib/options";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { markOrderPaid } from "@/lib/orders";
@@ -22,7 +23,7 @@ type Order = {
   total_cents: number;
   stripe_account_id: string;
   stripe_session_id: string | null;
-  order_items: { name: string; quantity: number; price_cents: number }[];
+  order_items: { name: string; quantity: number; price_cents: number; options: Picked[] | null }[];
 };
 
 export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/[id]">) {
@@ -31,7 +32,7 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
 
   const { data } = await supabaseAdmin
     .from("orders")
-    .select("*, order_items(name, quantity, price_cents)")
+    .select("*, order_items(name, quantity, price_cents, options)")
     .eq("id", id)
     .maybeSingle();
   const order = data as Order | null;
@@ -74,10 +75,11 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
 
       <div className="mt-8 rounded-3xl bg-white border border-line p-5 text-left">
         <ul className="space-y-1.5 text-sm">
-          {order.order_items.map((i) => (
-            <li key={i.name} className="flex justify-between gap-4">
+          {order.order_items.map((i, n) => (
+            <li key={n} className="flex justify-between gap-4">
               <span>
                 {i.quantity} × {i.name}
+                {i.options?.length ? <span className="block text-xs text-ink-soft">{pickedSummary(i.options)}</span> : null}
               </span>
               <span>{money((i.price_cents * i.quantity) / 100)}</span>
             </li>

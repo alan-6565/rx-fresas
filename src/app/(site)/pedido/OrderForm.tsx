@@ -52,7 +52,7 @@ export default function OrderForm({ spots }: { spots: Spot[] }) {
   const time = slots.includes(chosenTime) ? chosenTime : (slots[0] ?? "");
 
   // Cents, priced from menu ids the same way the server will charge them
-  const q = quote(cart.lines.map(({ id, qty }) => ({ id, qty })), cart.menu);
+  const q = quote(cart.lines.map(({ id, qty, options }) => ({ id, qty, options })), cart.menu);
   const ready = cart.count > 0 && name.trim() !== "" && phone.trim() !== "" && !!spot && time !== "";
 
   // The server re-prices the order, saves it and hands back a Stripe Checkout link
@@ -64,7 +64,7 @@ export default function OrderForm({ spots }: { spots: Spot[] }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, notes, location: spot?.name, day, time, lines: cart.lines.map(({ id, qty }) => ({ id, qty })) }),
+        body: JSON.stringify({ name, phone, notes, location: spot?.name, day, time, lines: cart.lines.map(({ id, qty, options }) => ({ id, qty, options })) }),
       });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error ?? "No pudimos iniciar el pago. Intenta otra vez.");
@@ -98,25 +98,25 @@ export default function OrderForm({ spots }: { spots: Spot[] }) {
           ) : (
             <ul className="divide-y divide-line">
               {cart.lines.map((l) => (
-                <li key={l.id} className="flex gap-4 py-4 first:pt-0">
+                <li key={l.key} className="flex gap-4 py-4 first:pt-0">
                   <Photo src={l.image} alt={l.name} className="w-20 h-20 rounded-2xl shrink-0" sizes="80px" />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between gap-2">
                       <p className="font-semibold leading-tight">{l.name}</p>
                       <span className="font-semibold text-rose">{money(l.price * l.qty)}</span>
                     </div>
-                    <p className="text-sm text-ink-soft">{l.desc}</p>
+                    <p className="text-sm text-ink-soft">{l.summary || l.desc}</p>
                     <div className="mt-2 flex items-center gap-3">
                       <div className="flex items-center rounded-full border border-line bg-white">
-                        <button onClick={() => cart.setQty(l.id, l.qty - 1)} aria-label="Quitar uno" className="w-8 h-8 text-lg">
+                        <button onClick={() => cart.setQty(l.key, l.qty - 1)} aria-label="Quitar uno" className="w-8 h-8 text-lg">
                           −
                         </button>
                         <span className="w-6 text-center text-sm font-semibold">{l.qty}</span>
-                        <button onClick={() => cart.setQty(l.id, l.qty + 1)} aria-label="Agregar uno" className="w-8 h-8 text-lg">
+                        <button onClick={() => cart.setQty(l.key, l.qty + 1)} aria-label="Agregar uno" className="w-8 h-8 text-lg">
                           +
                         </button>
                       </div>
-                      <button onClick={() => cart.setQty(l.id, 0)} aria-label={`Eliminar ${l.name}`} className="text-rose hover:text-rose-dark">
+                      <button onClick={() => cart.setQty(l.key, 0)} aria-label={`Eliminar ${l.name}`} className="text-rose hover:text-rose-dark">
                         <TrashIcon className="w-5 h-5" />
                       </button>
                     </div>

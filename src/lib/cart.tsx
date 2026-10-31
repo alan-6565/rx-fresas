@@ -2,28 +2,44 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Item } from "@/lib/data";
+import { pickedSummary, priceSelection } from "@/lib/options";
 
-export type CartItem = { id: string; qty: number };
+/** `options` are "groupId:choiceId" picks; the same item with different picks is its own line */
+export type CartItem = { id: string; qty: number; options?: string[] };
+
+export type CartLine = CartItem & {
+  key: string;
+  options: string[];
+  name: string;
+  desc: string;
+  image: string;
+  /** Price of one, options included, in dollars */
+  price: number;
+  /** "16 oz · Chocolate · Nutella" */
+  summary: string;
+};
 
 type CartContextValue = {
   /** What can be ordered right now (from the database) */
   menu: Item[];
-  /** Cart lines for items still on the menu; hidden or removed ones drop out */
-  lines: (CartItem & { name: string; desc: string; image: string; price: number })[];
+  /** Cart lines for items still on the menu; hidden or changed ones drop out */
+  lines: CartLine[];
   count: number;
-  add: (id: string) => void;
-  setQty: (id: string, qty: number) => void;
+  add: (id: string, options?: string[], qty?: number) => void;
+  setQty: (key: string, qty: number) => void;
   clear: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "rx-fresas-cart";
 
+const keyOf = (i: CartItem) => [i.id, ...[...(i.options ?? [])].sort()].join("|");
+
 // Pre-loaded like the "Tu Pedido" mockup so checkout looks filled in on first visit
 const STARTER: CartItem[] = [
-  { id: "fresa-original-12", qty: 1 },
-  { id: "malvavisco", qty: 1 },
-  { id: "pancakes-15", qty: 1 },
+  { id: "fresa-original", qty: 1, options: ["tamano:12-oz", "crema:casa"] },
+  { id: "malvavisco", qty: 1, options: ["estilo:latte"] },
+  { id: "pancakes-15", qty: 1, options: ["frutas:fresa", "drizzles:nutella"] },
 ];
 
 export function CartProvider({ menu, children }: { menu: Item[]; children: React.ReactNode }) {
@@ -49,18 +65,29 @@ export function CartProvider({ menu, children }: { menu: Item[]; children: React
   // Stable so effects can depend on it (the thank-you page clears the cart)
   const clear = useCallback(() => setItems([]), []);
 
-  const lines = items.flatMap((i) => {
+  const lines = items.flatMap((i): CartLine[] => {
     const m = menu.find((x) => x.id === i.id);
-    return m ? [{ ...i, name: m.name, desc: m.desc, image: m.image, price: m.price }] : [];
+    if (!m) return [];
+    const options = i.options ?? [];
+    try {
+      // Drops lines whose options were changed on the menu since they were added
+      const { unit, picked } = priceSelection({ ...m, options: m.options ?? [] }, options);
+      return [{ ...i, key: keyOf(i), options, name: m.name, desc: m.desc, image: m.image, price: unit / 100, summary: pickedSummary(picked) }];
+    } catch {
+      return [];
+    }
   });
 
   const value: CartContextValue = {
     menu,
     lines,
     count: lines.reduce((n, i) => n + i.qty, 0),
-    add: (id) =>
-      setItems((prev) => (prev.some((i) => i.id === id) ? prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i)) : [...prev, { id, qty: 1 }])),
-    setQty: (id, qty) => setItems((prev) => (qty < 1 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, qty } : i)))),
+    add: (id, options = [], qty = 1) =>
+      setItems((prev) => {
+        const key = keyOf({ id, qty, options });
+        return prev.some((i) => keyOf(i) === key) ? prev.map((i) => (keyOf(i) === key ? { ...i, qty: i.qty + qty } : i)) : [...prev, { id, qty, options }];
+      }),
+    setQty: (key, qty) => setItems((prev) => (qty < 1 ? prev.filter((i) => keyOf(i) !== key) : prev.map((i) => (keyOf(i) === key ? { ...i, qty } : i)))),
     clear,
   };
 

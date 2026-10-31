@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
+import { pickedSummary } from "@/lib/options";
 import { supabaseAdmin } from "@/lib/supabase";
 import { connectedAccountId, stripe } from "@/lib/stripe";
 import { pacificDate } from "@/lib/time";
@@ -40,9 +41,14 @@ export async function POST(req: NextRequest) {
   // Prices, fees and the total all come from the server's menu, never the browser
   let q;
   try {
-    q = quote(body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty) })), menu);
-  } catch {
-    return bad("Algo en tu orden cambió. Revisa tu orden e intenta otra vez.");
+    q = quote(
+      body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty), options: Array.isArray(l.options) ? l.options.map(String) : [] })),
+      menu,
+    );
+  } catch (e) {
+    // Option problems explain themselves ("…demasiadas opciones en toppings")
+    const msg = e instanceof Error && !e.message.startsWith("Unknown") && !e.message.startsWith("Bad") ? e.message : "";
+    return bad(msg || "Algo en tu orden cambió. Revisa tu orden e intenta otra vez.");
   }
 
   const account = await connectedAccountId();
@@ -69,17 +75,14 @@ export async function POST(req: NextRequest) {
     .single();
   if (error || !order) return bad("No pudimos guardar tu orden. Intenta otra vez.", 500);
 
-  const lines = body.lines.map((l) => {
-    const item = menu.find((m) => m.id === l.id)!;
-    return { item, qty: Number(l.qty) };
-  });
   const { error: itemsError } = await supabaseAdmin.from("order_items").insert(
-    lines.map(({ item, qty }) => ({
+    q.lines.map(({ item, qty, unit, picked }) => ({
       order_id: order.id,
       menu_item_id: item.id,
       name: item.name,
-      price_cents: Math.round(item.price * 100),
+      price_cents: unit,
       quantity: qty,
+      options: picked,
     })),
   );
   if (itemsError) return bad("No pudimos guardar tu orden. Intenta otra vez.", 500);
@@ -99,9 +102,9 @@ export async function POST(req: NextRequest) {
       // Link's wallet also offers bank and Klarna payments with other fees
       wallet_options: { link: { display: "never" } },
       line_items: [
-        ...lines.map(({ item, qty }) => ({
+        ...q.lines.map(({ item, qty, unit, picked }) => ({
           quantity: qty,
-          price_data: { currency: "usd", unit_amount: Math.round(item.price * 100), product_data: { name: item.name, description: item.desc } },
+          price_data: { currency: "usd", unit_amount: unit, product_data: { name: item.name, description: pickedSummary(picked) || item.desc || undefined } },
         })),
         fee(`Tarifa de servicio ($1 × ${q.items})`, q.platformFee),
         fee("Procesamiento de tarjeta", q.cardFee),

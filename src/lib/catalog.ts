@@ -3,6 +3,7 @@ import { cache } from "react";
 import { categories as starterCategories, items as starterItems, locations as starterLocations, type Item } from "@/lib/data";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Spot, WeekHours } from "@/lib/schedule";
+import type { OptionGroup } from "@/lib/options";
 
 // The menu and locations the staff edit from the dashboard. Pages read them
 // here; the dashboard's API routes call revalidatePath after every change so
@@ -20,6 +21,7 @@ export type MenuItemRow = {
   image_url: string;
   available: boolean;
   sort: number;
+  options: OptionGroup[];
 };
 
 export type LocationRow = {
@@ -47,6 +49,7 @@ export const toItem = (r: MenuItemRow): Item => ({
   desc: r.description,
   image: r.image_url || FALLBACK_IMAGE,
   category: r.category_id,
+  options: r.options ?? [],
 });
 
 export const toSpot = (r: LocationRow): Spot => ({

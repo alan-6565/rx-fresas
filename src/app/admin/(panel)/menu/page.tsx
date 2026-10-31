@@ -6,10 +6,22 @@ import { money } from "@/lib/data";
 import { Card, Field, Modal, PageHeader, Toggle, btn, field } from "@/components/admin/ui";
 import { PhotoPicker } from "@/components/admin/PhotoPicker";
 import { MenuBookIcon, PencilIcon, PlusIcon } from "@/components/admin/icons";
+import { OptionsEditor } from "@/components/admin/OptionsEditor";
+import type { OptionGroup } from "@/lib/options";
 
 type Category = { id: string; label: string; title: string; sort: number };
-type Item = { id: string; category_id: string; name: string; description: string; price_cents: number; image_url: string; available: boolean; sort: number };
-type Draft = { id?: string; name: string; description: string; price: string; category: string; image: string; available: boolean };
+type Item = {
+  id: string;
+  category_id: string;
+  name: string;
+  description: string;
+  price_cents: number;
+  image_url: string;
+  available: boolean;
+  sort: number;
+  options: OptionGroup[];
+};
+type Draft = { id?: string; name: string; description: string; price: string; category: string; image: string; available: boolean; options: OptionGroup[] };
 
 const json = async <T,>(res: Response): Promise<T> => {
   const data = await res.json().catch(() => ({}));
@@ -66,7 +78,7 @@ export default function MenuAdmin() {
   const catOrder = (id: string) => categories.findIndex((c) => c.id === id);
   const shown = (items ?? []).filter((i) => tab === "all" || i.category_id === tab).sort((a, b) => catOrder(a.category_id) - catOrder(b.category_id) || a.sort - b.sort);
   const count = (id: string) => (items ?? []).filter((i) => i.category_id === id).length;
-  const blank = (): Draft => ({ name: "", description: "", price: "", category: tab !== "all" ? tab : (categories[0]?.id ?? ""), image: "", available: true });
+  const blank = (): Draft => ({ name: "", description: "", price: "", category: tab !== "all" ? tab : (categories[0]?.id ?? ""), image: "", available: true, options: [] });
 
   return (
     <>
@@ -127,6 +139,11 @@ export default function MenuAdmin() {
                   <span className="font-bold text-rose">{money(item.price_cents / 100)}</span>
                 </div>
                 <p className="mt-1 text-sm text-ink-soft">{item.description}</p>
+                {item.options?.length > 0 && (
+                  <p className="mt-2 text-xs text-ink-soft">
+                    <span className="font-semibold text-rose">Options:</span> {item.options.map((g) => g.name).join(", ")}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-2 px-4 pb-4">
                 <button
@@ -139,6 +156,7 @@ export default function MenuAdmin() {
                       category: item.category_id,
                       image: item.image_url,
                       available: item.available,
+                      options: item.options ?? [],
                     })
                   }
                   className={btn.ghost}
@@ -160,6 +178,7 @@ export default function MenuAdmin() {
         <ItemEditor
           draft={draft}
           categories={categories}
+          others={(items ?? []).filter((i) => i.id !== draft.id && i.options?.length > 0)}
           onClose={() => setDraft(null)}
           onSaved={(saved) => {
             setItems((list) => (list?.some((i) => i.id === saved.id) ? list.map((i) => (i.id === saved.id ? saved : i)) : [...(list ?? []), saved]));
@@ -195,7 +214,19 @@ export default function MenuAdmin() {
   );
 }
 
-function ItemEditor({ draft: start, categories, onClose, onSaved }: { draft: Draft; categories: Category[]; onClose: () => void; onSaved: (item: Item) => void }) {
+function ItemEditor({
+  draft: start,
+  categories,
+  others,
+  onClose,
+  onSaved,
+}: {
+  draft: Draft;
+  categories: Category[];
+  others: Item[];
+  onClose: () => void;
+  onSaved: (item: Item) => void;
+}) {
   const [d, setD] = useState(start);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -205,7 +236,7 @@ function ItemEditor({ draft: start, categories, onClose, onSaved }: { draft: Dra
     setSaving(true);
     setError("");
     try {
-      const body = { name: d.name, description: d.description, price: Number(d.price), category: d.category, image: d.image, available: d.available };
+      const body = { name: d.name, description: d.description, price: Number(d.price), category: d.category, image: d.image, available: d.available, options: d.options };
       const res = await fetch(d.id ? `/api/admin/menu/${d.id}` : "/api/admin/menu", {
         method: d.id ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -258,6 +289,7 @@ function ItemEditor({ draft: start, categories, onClose, onSaved }: { draft: Dra
       <Field label="Description" hint="Shown under the name on the website, in Spanish.">
         <textarea value={d.description} onChange={(e) => set({ description: e.target.value })} maxLength={160} rows={2} placeholder="Fresas, crema, nutella y toppings" className={`${field} resize-none`} />
       </Field>
+      <OptionsEditor groups={d.options} onChange={(options) => set({ options })} copyFrom={others.map((o) => ({ name: o.name, options: o.options }))} />
       <div className="flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3">
         <span className="text-sm font-medium">Show on website</span>
         <Toggle on={d.available} onChange={(available) => set({ available })} label="Show on website" />

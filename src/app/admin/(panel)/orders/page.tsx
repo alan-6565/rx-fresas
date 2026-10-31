@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { money } from "@/lib/data";
+import { pickedSummary } from "@/lib/options";
 import { RANGES, type Range, type StaffOrder } from "@/lib/order-types";
 import { clearOrderBanners, isIOS, playChime, pushState, soundOn, startAlerts, turnOnPush, type PushState } from "@/lib/alerts";
 import { Card, PageHeader, STATUS, StatusPill, type Status } from "@/components/admin/ui";
@@ -27,7 +28,13 @@ const NEXT_STEP: Partial<Record<Status, { to: Status; label: string; cls: string
   ready: { to: "picked_up", label: "Picked Up", cls: "bg-emerald-600 hover:bg-emerald-700 text-white" },
 };
 
-const itemsText = (o: StaffOrder) => o.order_items.map((i) => `${i.name} x${i.quantity}`).join(", ");
+const itemsText = (o: StaffOrder) =>
+  o.order_items.map((i) => `${i.name}${i.options?.length ? ` (${pickedSummary(i.options)})` : ""} x${i.quantity}`).join(", ");
+const groupedOptions = (options: { group: string; name: string }[] | null) => {
+  const map = new Map<string, string[]>();
+  for (const p of options ?? []) map.set(p.group, [...(map.get(p.group) ?? []), p.name]);
+  return [...map.entries()];
+};
 const phoneText = (p: string) => {
   const d = p.replace(/\D/g, "").slice(-10);
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
@@ -384,10 +391,16 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
 
           <Card className="p-4">
             <ul className="space-y-2">
-              {o.order_items.map((i) => (
-                <li key={i.menu_item_id} className="flex justify-between gap-3">
+              {o.order_items.map((i, n) => (
+                <li key={n} className="flex justify-between gap-3">
                   <span>
                     <strong className="text-rose">{i.quantity}×</strong> {i.name}
+                    {/* One line per group so it reads like a ticket: "Toppings: Oreo, KitKat" */}
+                    {groupedOptions(i.options).map(([group, names]) => (
+                      <span key={group} className="block pl-6 text-sm text-ink-soft">
+                        <span className="font-semibold text-ink">{group}:</span> {names.join(", ")}
+                      </span>
+                    ))}
                   </span>
                   <span>{money((i.price_cents * i.quantity) / 100)}</span>
                 </li>

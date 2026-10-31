@@ -2,6 +2,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { validHours } from "@/lib/schedule";
+import { cleanGroups } from "@/lib/options";
 
 // Checks for what the dashboard sends when it edits the menu and locations.
 
@@ -49,6 +50,7 @@ export function menuItemFields(b: Record<string, unknown>) {
   if ("image" in b) out.image_url = text(b.image, 500) ?? "";
   if ("available" in b) out.available = !!b.available;
   if ("sort" in b && Number.isInteger(b.sort)) out.sort = b.sort;
+  if ("options" in b) out.options = cleanGroups(b.options);
   return out;
 }
 

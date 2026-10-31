@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext<"/api/adm
     .from("menu_items")
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .select("id, category_id, name, description, price_cents, image_url, available, sort")
+    .select("id, category_id, name, description, price_cents, image_url, available, sort, options")
     .maybeSingle();
   if (error) return bad("Couldn't save the item", 500);
   if (!data) return bad("Item not found", 404);

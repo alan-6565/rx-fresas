@@ -6,7 +6,7 @@ import { bad, menuItemFields, refreshSite, slugify } from "@/lib/admin-catalog";
 export async function GET() {
   const [cats, items] = await Promise.all([
     supabaseAdmin.from("menu_categories").select("id, label, title, sort").order("sort"),
-    supabaseAdmin.from("menu_items").select("id, category_id, name, description, price_cents, image_url, available, sort").order("sort").order("name"),
+    supabaseAdmin.from("menu_items").select("id, category_id, name, description, price_cents, image_url, available, sort, options").order("sort").order("name"),
   ]);
   if (cats.error || items.error) return bad("Couldn't load the menu", 500);
   return NextResponse.json({ categories: cats.data, items: items.data });
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabaseAdmin
     .from("menu_items")
     .insert({ id, sort: (last?.[0]?.sort ?? 0) + 1, ...fields })
-    .select("id, category_id, name, description, price_cents, image_url, available, sort")
+    .select("id, category_id, name, description, price_cents, image_url, available, sort, options")
     .single();
   if (error) return bad(error.code === "23503" ? "That category doesn't exist anymore." : "Couldn't add the item", 500);
   refreshSite();

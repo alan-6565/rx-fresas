@@ -1,3 +1,5 @@
+import type { OptionGroup } from "@/lib/options";
+
 export const business = {
   name: "R&X Fresas con Crema",
   city: "Richmond, CA",
@@ -46,6 +48,8 @@ export const categories = [
 
 export type Item = {
   id: string;
+  /** Sizes, crema, toppings… (empty for the built-in starter menu) */
+  options?: OptionGroup[];
   name: string;
   price: number;
   desc: string;

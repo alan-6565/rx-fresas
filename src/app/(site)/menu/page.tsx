@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { money, toppings } from "@/lib/data";
+import { hasRequiredUpcharge } from "@/lib/options";
 import { getMenu } from "@/lib/catalog";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
@@ -96,7 +97,7 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="font-bold text-lg leading-tight">{item.name}</h3>
-                    <span className="font-bold text-rose">{money(item.price)}</span>
+                    <span className="font-bold text-rose">{hasRequiredUpcharge({ price: item.price, options: item.options ?? [] }) && "Desde "}{money(item.price)}</span>
                   </div>
                   <p className="mt-1 text-ink-soft">{item.desc}</p>
                   <AddButton id={item.id} className="mt-3" />

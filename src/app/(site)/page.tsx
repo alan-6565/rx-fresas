@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { business, money } from "@/lib/data";
+import { hasRequiredUpcharge } from "@/lib/options";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { hoursSummary, mapsUrl } from "@/lib/schedule";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
@@ -86,7 +87,7 @@ export default async function Home() {
               <Photo src={item.image} alt={item.name} className="aspect-square" sizes="(min-width:1024px) 25vw, 50vw" />
               <div className="p-4 text-center">
                 <h3 className="font-semibold leading-tight">{item.name}</h3>
-                <p className="mt-1 text-rose font-bold">{money(item.price)}</p>
+                <p className="mt-1 text-rose font-bold">{hasRequiredUpcharge({ price: item.price, options: item.options ?? [] }) && "Desde "}{money(item.price)}</p>
                 <p className="text-sm text-ink-soft">{item.desc}</p>
                 <AddButton id={item.id} className="mt-3 w-full" />
               </div>

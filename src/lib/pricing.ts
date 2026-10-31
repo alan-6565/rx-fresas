@@ -1,4 +1,5 @@
 import type { Item } from "@/lib/data";
+import { priceSelection, type Picked } from "@/lib/options";
 
 // Everything is in cents. The customer pays the platform fee and the card
 // processing on top of menu prices, so R&X keeps the full menu price. No sales
@@ -11,9 +12,12 @@ export const PLATFORM_FEE_PER_ITEM = 100;
 const STRIPE_PERCENT = 0.029;
 const STRIPE_FIXED = 30;
 
-export type Line = { id: string; qty: number };
+/** `options` are "groupId:choiceId" picks for that item */
+export type Line = { id: string; qty: number; options?: string[] };
+export type PricedLine = { item: Item; qty: number; unit: number; picked: Picked[] };
 
 export type Quote = {
+  lines: PricedLine[];
   items: number;
   subtotal: number;
   platformFee: number;
@@ -35,12 +39,16 @@ export function stripeFee(amount: number) {
 export function quote(lines: Line[], menu: Item[]): Quote {
   let items = 0;
   let subtotal = 0;
-  for (const { id, qty } of lines) {
+  const priced: PricedLine[] = [];
+  for (const { id, qty, options = [] } of lines) {
     const item = menu.find((m) => m.id === id);
     if (!item) throw new Error(`Unknown menu item: ${id}`);
     if (!Number.isInteger(qty) || qty < 1 || qty > 50) throw new Error(`Bad quantity for ${id}`);
+    // Options add to the price of each one; the platform fee stays $1 per item
+    const { unit, picked } = priceSelection({ ...item, options: item.options ?? [] }, options);
+    priced.push({ item, qty, unit, picked });
     items += qty;
-    subtotal += Math.round(item.price * 100) * qty;
+    subtotal += unit * qty;
   }
 
   const platformFee = items * PLATFORM_FEE_PER_ITEM;
@@ -51,5 +59,5 @@ export function quote(lines: Line[], menu: Item[]): Quote {
   while (total > 0 && total - stripeFee(total) < base) total++;
 
   const cardFee = total - base;
-  return { items, subtotal, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
+  return { lines: priced, items, subtotal, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
 }
