@@ -90,6 +90,8 @@ export async function POST(req: NextRequest) {
       // The card fee line is priced for Stripe's card rate; Klarna, bank and
       // the rest cost more. Apple Pay and Google Pay are cards, so they stay.
       payment_method_types: ["card"],
+      // Link's wallet also offers bank and Klarna payments with other fees
+      wallet_options: { link: { display: "never" } },
       line_items: [
         ...lines.map(({ item, qty }) => ({
           quantity: qty,

@@ -242,7 +242,7 @@ export default function OrdersPage() {
                       <td className="px-4 py-3 font-semibold">#{o.order_number}</td>
                       <td className="px-4 py-3">
                         <span className="block font-medium">{o.customer_name}</span>
-                        <span className="block text-xs text-ink-soft">{phoneText(o.customer_phone)}</span>
+                        <span className="block text-xs text-ink-soft whitespace-nowrap">{phoneText(o.customer_phone)}</span>
                       </td>
                       <td className="px-4 py-3 max-w-xs">
                         <span className="line-clamp-2">{itemsText(o)}</span>
@@ -269,7 +269,7 @@ export default function OrdersPage() {
                             <button
                               onClick={() => setStatus(o.id, step.to)}
                               disabled={busyId === o.id}
-                              className={`rounded-lg px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${step.cls} ${isNew ? "animate-pulse" : ""}`}
+                              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${step.cls} ${isNew ? "ring-4 ring-rose/25 shadow-md" : ""}`}
                             >
                               {step.label}
                             </button>

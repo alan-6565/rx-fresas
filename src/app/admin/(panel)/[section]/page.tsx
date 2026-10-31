@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { adminNav } from "@/components/admin/Sidebar";
+import { adminNav } from "@/components/admin/nav";
 import { Card, PageHeader } from "@/components/admin/ui";
 
 // Sections from the mockup that come in a later step

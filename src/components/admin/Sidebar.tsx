@@ -4,32 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  ChartIcon,
-  CloseIcon,
-  DashboardIcon,
-  GearIcon,
-  ImageIcon,
-  LogoutIcon,
-  MegaphoneIcon,
-  MenuBookIcon,
-  MenuIcon,
-  OrdersIcon,
-  PinIcon,
-  UsersIcon,
-} from "@/components/admin/icons";
-
-export const adminNav = [
-  { href: "/admin", label: "Dashboard", icon: DashboardIcon },
-  { href: "/admin/orders", label: "Orders", icon: OrdersIcon },
-  { href: "/admin/menu", label: "Menu", icon: MenuBookIcon },
-  { href: "/admin/locations", label: "Locations", icon: PinIcon },
-  { href: "/admin/media", label: "Media", icon: ImageIcon },
-  { href: "/admin/promotions", label: "Promotions", icon: MegaphoneIcon },
-  { href: "/admin/customers", label: "Customers", icon: UsersIcon },
-  { href: "/admin/analytics", label: "Analytics", icon: ChartIcon },
-  { href: "/admin/settings", label: "Settings", icon: GearIcon },
-];
+import { CloseIcon, LogoutIcon, MenuIcon } from "@/components/admin/icons";
+import { adminNav } from "@/components/admin/nav";
 
 function Logo() {
   return (
