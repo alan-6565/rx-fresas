@@ -71,7 +71,7 @@ export function MenuItems({ sections }: { sections: MenuSection[] }) {
   const card = (item: Item, i: number) => <ItemCard key={item.id} item={item} i={i} fav={favs.includes(item.id)} onFav={() => toggleFav(item.id)} />;
 
   return (
-    <div className="mt-10">
+    <div className="mt-6">
       {/* Category pills that stay on screen while scrolling */}
       <div className="rx-below-nav sticky z-30 -mx-4 flex flex-wrap items-center gap-3 border-b border-line/60 bg-cream/90 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
         <nav className="flex min-w-0 flex-1 gap-2 overflow-x-auto no-scrollbar" aria-label="Secciones del menú">
