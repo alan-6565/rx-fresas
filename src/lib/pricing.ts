@@ -1,4 +1,4 @@
-import { items as menu } from "@/lib/data";
+import type { Item } from "@/lib/data";
 
 // Everything is in cents. The customer pays the platform fee and the card
 // processing on top of menu prices, so R&X keeps the full menu price. No sales
@@ -30,9 +30,9 @@ export function stripeFee(amount: number) {
 
 /**
  * Prices an order from menu ids only, so the browser can't change a price.
- * Unknown ids and bad quantities are rejected rather than skipped.
+ * Unknown (or hidden) ids and bad quantities are rejected rather than skipped.
  */
-export function quote(lines: Line[]): Quote {
+export function quote(lines: Line[], menu: Item[]): Quote {
   let items = 0;
   let subtotal = 0;
   for (const { id, qty } of lines) {

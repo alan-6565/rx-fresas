@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { categories, items, money, toppings, type CategoryId } from "@/lib/data";
+import { money, toppings } from "@/lib/data";
+import { getMenu } from "@/lib/catalog";
 import { PLATFORM_FEE_PER_ITEM } from "@/lib/pricing";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
@@ -8,7 +9,8 @@ import { CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/c
 
 export const metadata: Metadata = { title: "Menú — R&X Fresas con Crema" };
 
-const ICONS: Record<CategoryId, typeof CupIcon> = {
+// Categories added from the dashboard get the sparkle
+const ICONS: Record<string, typeof CupIcon> = {
   cafes: CupIcon,
   fresas: StrawberryIcon,
   pancakes: PancakeIcon,
@@ -40,10 +42,12 @@ function Toppings() {
 }
 
 export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
-  const { cat } = await searchParams;
-  const active = (categories.find((c) => c.id === cat) ?? categories[0]).id;
-  const current = categories.find((c) => c.id === active)!;
-  const list = items.filter((i) => i.category === active);
+  const [{ cat }, menu] = await Promise.all([searchParams, getMenu()]);
+  // Empty categories stay off the menu, except Extras, which explains the toppings
+  const categories = menu.categories.filter((c) => c.id === "extras" || menu.items.some((i) => i.category === c.id));
+  const current = categories.find((c) => c.id === cat) ?? categories[0];
+  const active = current?.id;
+  const list = menu.items.filter((i) => i.category === active);
 
   return (
     <PageTop>
@@ -58,9 +62,9 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
         tarjeta. Los precios del menú son los mismos que en el truck.
       </p>
 
-      <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-5">
+      <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
         {categories.map((c) => {
-          const Icon = ICONS[c.id];
+          const Icon = ICONS[c.id] ?? SparkleIcon;
           const on = c.id === active;
           return (
             <Link
@@ -80,13 +84,13 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
 
       <section className="mt-12">
         <h2 className="font-hand text-5xl text-ink flex items-center gap-3">
-          {current.title}
+          {current?.title ?? "Pronto"}
           <svg viewBox="0 0 60 12" className="w-14 h-3 text-rose" fill="none">
             <path d="M2 8c8-6 14 4 22-1s14-5 22 0 10 2 12-1" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
         </h2>
 
-        {active === "extras" ? (
+        {list.length === 0 ? (
           <p className="mt-4 text-lg text-ink-soft">Personaliza tus fresas y mini pancakes con tus toppings favoritos. Pregunta por los precios en el truck.</p>
         ) : (
           <div className="mt-8 grid md:grid-cols-2 gap-5">

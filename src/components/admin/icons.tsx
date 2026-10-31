@@ -125,6 +125,22 @@ export const MenuIcon = ({ className }: P) => (
     <path d="M4 7h16M4 12h16M4 17h16" />
   </svg>
 );
+export const PlusIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...s}>
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+export const PencilIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...s}>
+    <path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4" />
+  </svg>
+);
+export const CameraIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...s}>
+    <path d="M4 8h3l2-2.5h6L17 8h3v11H4V8Z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </svg>
+);
 export const HeartDoodle = ({ className }: P) => (
   <svg viewBox="0 0 40 40" className={className} fill="none">
     <path d="M20 34C12 27 5 21 6 13.5 7 8 13.5 6.5 17 10.5c1.3 1.4 2.2 3 3 4.7.9-2 2-3.8 3.6-5.2C27.4 6.6 33.6 8 34.4 13.5 35.4 21 27.5 27.5 20 34Z" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />

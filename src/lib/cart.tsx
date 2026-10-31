@@ -1,11 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { items as menu } from "@/lib/data";
+import type { Item } from "@/lib/data";
 
 export type CartItem = { id: string; qty: number };
 
 type CartContextValue = {
+  /** What can be ordered right now (from the database) */
+  menu: Item[];
+  /** Cart lines for items still on the menu; hidden or removed ones drop out */
   lines: (CartItem & { name: string; desc: string; image: string; price: number })[];
   count: number;
   add: (id: string) => void;
@@ -23,7 +26,7 @@ const STARTER: CartItem[] = [
   { id: "pancakes-15", qty: 1 },
 ];
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ menu, children }: { menu: Item[]; children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(STARTER);
   const [loaded, setLoaded] = useState(false);
 
@@ -52,6 +55,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   });
 
   const value: CartContextValue = {
+    menu,
     lines,
     count: lines.reduce((n, i) => n + i.qty, 0),
     add: (id) =>

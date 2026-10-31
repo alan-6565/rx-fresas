@@ -1,6 +1,6 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
-import { items as menu } from "@/lib/data";
+import { FALLBACK_IMAGE } from "@/lib/catalog";
 import { pacificDate, pacificDayStart, pacificHour } from "@/lib/time";
 
 type Row = {
@@ -58,10 +58,9 @@ export async function dashboardStats() {
       top.set(i.menu_item_id, t);
     }
   }
-  const topItems = [...top.values()]
-    .sort((a, b) => b.sold - a.sold || b.cents - a.cents)
-    .slice(0, 4)
-    .map((t) => ({ ...t, image: menu.find((m) => m.id === t.id)?.image ?? "/images/logo.png" }));
+  const best = [...top.values()].sort((a, b) => b.sold - a.sold || b.cents - a.cents).slice(0, 4);
+  const { data: photos } = await supabaseAdmin.from("menu_items").select("id, image_url").in("id", best.length ? best.map((t) => t.id) : [""]);
+  const topItems = best.map((t) => ({ ...t, image: photos?.find((p) => p.id === t.id)?.image_url || FALLBACK_IMAGE }));
 
   return {
     ordersToday: placedToday.length,

@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { business, items, locations, money } from "@/lib/data";
+import { business, money } from "@/lib/data";
+import { getMenu, getSpots } from "@/lib/catalog";
+import { hoursSummary, mapsUrl } from "@/lib/schedule";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
 import { Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
+import { TruckNow } from "@/components/TruckNow";
 import { ClockIcon, CupIcon, HeartDoodle, LeafIcon, PancakeIcon, PinIcon, StrawberryIcon } from "@/components/icons";
 
 const features = [
@@ -12,9 +15,12 @@ const features = [
   { icon: LeafIcon, title: "Especiales de Temporada", sub: "Sabores únicos", href: "/menu?cat=otono" },
 ];
 
-export default function Home() {
-  const cafes = items.filter((i) => i.category === "cafes");
-  const otono = items.filter((i) => i.category === "otono");
+export default async function Home() {
+  const [{ categories, items }, spots] = await Promise.all([getMenu(), getSpots()]);
+  // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
+  const cafes = (items.some((i) => i.category === "cafes") ? items.filter((i) => i.category === "cafes") : items).slice(0, 4);
+  const otono = items.filter((i) => i.category === "otono").slice(0, 2);
+  const otonoTitle = categories.find((c) => c.id === "otono")?.label ?? "Para el Otoño";
 
   return (
     <>
@@ -87,12 +93,13 @@ export default function Home() {
       </section>
 
       {/* Seasonal */}
+      {otono.length > 0 && (
       <section className="mt-24 bg-cocoa text-cream relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-8 py-16 grid lg:grid-cols-[1fr_1.4fr] gap-10 items-center">
           <div>
             <p className="font-semibold tracking-[0.2em] uppercase text-rose-soft text-sm">Temporada</p>
             <h2 className="mt-2 font-hand text-6xl sm:text-7xl leading-none flex items-center gap-3">
-              Para el Otoño <LeafIcon className="w-10 h-10 text-[#e9945a]" />
+              {otonoTitle} <LeafIcon className="w-10 h-10 text-[#e9945a]" />
             </h2>
             <p className="mt-4 text-lg text-cream/80">Bebidas de temporada que te van a encantar ♥</p>
             <Button href="/menu?cat=otono" className="mt-8">
@@ -112,6 +119,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Story teaser */}
       <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-24 grid lg:grid-cols-2 gap-12 items-center">
@@ -136,9 +144,10 @@ export default function Home() {
       {/* Locations */}
       <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-28 text-center">
         <Heading sub="¡Ven por tu antojo favorito! ♥">Dónde Nos Encontrarás</Heading>
+        <TruckNow spots={spots} className="mt-8 mx-auto max-w-3xl" />
         <div className="mt-10 grid sm:grid-cols-2 gap-6 text-left">
-          {locations.map((l) => (
-            <article key={l.name} className="rounded-3xl bg-white border border-line shadow-sm overflow-hidden">
+          {spots.map((l) => (
+            <article key={l.id} className="rounded-3xl bg-white border border-line shadow-sm overflow-hidden">
               <Photo src={l.image} alt={`Food truck en ${l.name}`} className="aspect-[2.2/1]" />
               <div className="p-5 flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -146,11 +155,13 @@ export default function Home() {
                     <PinIcon className="w-6 h-6 text-rose" /> {l.name}
                   </h3>
                   <p className="text-ink-soft ml-8">{l.city}</p>
-                  <p className="mt-1 flex items-center gap-2 text-sm ml-8">
-                    <ClockIcon className="w-4 h-4" /> {l.hours}
-                  </p>
+                  {hoursSummary(l.hours).map((h) => (
+                    <p key={h} className="mt-1 flex items-center gap-2 text-sm ml-8">
+                      <ClockIcon className="w-4 h-4 shrink-0" /> {h}
+                    </p>
+                  ))}
                 </div>
-                <Button href={l.mapsUrl} className="text-sm px-5 py-2.5">
+                <Button href={mapsUrl(l)} className="text-sm px-5 py-2.5">
                   Cómo llegar
                 </Button>
               </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { items as menu, locations, pickupDays, pickupTimes } from "@/lib/data";
+import { getMenu, getSpots } from "@/lib/catalog";
+import { pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
 import { supabaseAdmin } from "@/lib/supabase";
 import { connectedAccountId, stripe } from "@/lib/stripe";
@@ -27,14 +28,19 @@ export async function POST(req: NextRequest) {
   const notes = body.notes?.trim().slice(0, 500) || null;
 
   if (!name || !phone) return bad("Agrega tu nombre y teléfono.");
-  if (!locations.some((l) => l.name === body.location)) return bad("Elige una ubicación.");
-  if (!pickupDays.includes(body.day ?? "") || !pickupTimes.includes(body.time ?? "")) return bad("Elige una fecha y hora.");
   if (!Array.isArray(body.lines) || body.lines.length === 0) return bad("Tu orden está vacía.");
+
+  const [{ items: menu }, spots] = await Promise.all([getMenu(), getSpots()]);
+  const spot = spots.find((l) => l.name === body.location);
+  if (!spot) return bad("Elige una ubicación.");
+  const day = pickupDays.find((d) => d === body.day) as PickupDay | undefined;
+  // A few minutes less lead time than the form, so a time picked just before it rolls over still works
+  if (!day || !pickupSlots(spot, day, 5).includes(body.time ?? "")) return bad("Esa hora de pickup ya no está disponible. Elige otra.");
 
   // Prices, fees and the total all come from the server's menu, never the browser
   let q;
   try {
-    q = quote(body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty) })));
+    q = quote(body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty) })), menu);
   } catch {
     return bad("Algo en tu orden cambió. Revisa tu orden e intenta otra vez.");
   }
@@ -48,10 +54,10 @@ export async function POST(req: NextRequest) {
       customer_name: name,
       customer_phone: phone,
       notes,
-      location: body.location,
-      pickup_day: body.day,
+      location: spot.name,
+      pickup_day: day,
       pickup_time: body.time,
-      pickup_date: pacificDate(body.day === "Mañana" ? 1 : 0),
+      pickup_date: pacificDate(day === "Mañana" ? 1 : 0),
       item_count: q.items,
       subtotal_cents: q.subtotal,
       platform_fee_cents: q.platformFee,
@@ -102,7 +108,7 @@ export async function POST(req: NextRequest) {
       ],
       payment_intent_data: {
         application_fee_amount: q.platformFee,
-        description: `Pedido R&X · ${body.location} · ${body.day} ${body.time}`,
+        description: `Pedido R&X · ${spot.name} · ${day} ${body.time}`,
         metadata: { orderId: order.id },
       },
       metadata: { orderId: order.id },

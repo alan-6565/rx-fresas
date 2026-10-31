@@ -17,6 +17,8 @@ export const navLinks = [
   { href: "/contacto", label: "Contacto" },
 ];
 
+// Starting menu and spots. The live ones are in the database and edited from
+// the dashboard (see lib/catalog.ts); these are only the first version.
 export const locations = [
   {
     name: "El Portal",
@@ -34,13 +36,6 @@ export const locations = [
   },
 ];
 
-// Truck hours are 6–10 p.m., so pickup slots every 15 minutes in that window
-export const pickupTimes = Array.from({ length: 16 }, (_, i) => {
-  const mins = 18 * 60 + i * 15;
-  return `${Math.floor(mins / 60) - 12}:${(mins % 60).toString().padStart(2, "0")} p.m.`;
-});
-export const pickupDays = ["Hoy", "Mañana"];
-
 export const categories = [
   { id: "cafes", label: "Cafés", title: "Cafés Fríos y Calientes" },
   { id: "fresas", label: "Fresas con Crema", title: "Fresas con Crema" },
@@ -48,7 +43,6 @@ export const categories = [
   { id: "otono", label: "Para el Otoño", title: "Para el Otoño" },
   { id: "extras", label: "Extras", title: "Agrega tus Toppings" },
 ] as const;
-export type CategoryId = (typeof categories)[number]["id"];
 
 export type Item = {
   id: string;
@@ -56,7 +50,7 @@ export type Item = {
   price: number;
   desc: string;
   image: string;
-  category: CategoryId;
+  category: string;
 };
 
 export const items: Item[] = [
