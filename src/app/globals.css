@@ -162,3 +162,32 @@ body {
     transition: none;
   }
 }
+
+/* Sticky bars that sit right under the navbar and slide up when it hides */
+.rx-below-nav {
+  top: 6rem;
+  transition: top 0.3s;
+}
+@media (min-width: 40rem) {
+  .rx-below-nav {
+    top: 7rem;
+  }
+}
+html[data-nav-hidden] .rx-below-nav {
+  top: 0;
+}
+
+.rx-pop {
+  animation: rx-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes rx-pop {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rx-pop {
+    animation: none;
+  }
+}

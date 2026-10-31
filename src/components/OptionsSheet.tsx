@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Item } from "@/lib/data";
 import { money } from "@/lib/data";
 import { defaultPicks, groupHint, priceSelection, type OptionGroup } from "@/lib/options";
@@ -47,7 +48,7 @@ export function OptionsSheet({ item, onAdd, onClose }: { item: Item; onAdd: (opt
   }
   const missing = (g: OptionGroup) => count(g) < g.min;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 sm:p-6" onClick={onClose}>
       <div
         role="dialog"
@@ -131,6 +132,7 @@ export function OptionsSheet({ item, onAdd, onClose }: { item: Item; onAdd: (opt
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

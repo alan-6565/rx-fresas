@@ -54,7 +54,7 @@ export default async function LocationsPage() {
             </div>
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
               {popular.map((item) => (
-                <Link key={item.id} href={`/menu?cat=${item.category}`} className="group rounded-2xl border border-line bg-cream/60 overflow-hidden hover:shadow-md transition-shadow">
+                <Link key={item.id} href={`/menu#${item.category}`} className="group rounded-2xl border border-line bg-cream/60 overflow-hidden hover:shadow-md transition-shadow">
                   <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="aspect-square" sizes="(min-width:768px) 16vw, 45vw" />
                   <div className="p-3 text-center">
                     <h3 className="font-hand text-2xl leading-none group-hover:text-rose">{shortName(item.name)}</h3>

@@ -63,6 +63,11 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lets sticky bars on the page (menu sections) sit under the navbar or move up when it hides
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-nav-hidden", hidden && !open);
+  }, [hidden, open]);
+
   return (
     <header className={`sticky top-0 z-40 h-24 sm:h-28 transition-transform duration-300 ${hidden && !open ? "-translate-y-[calc(100%+1rem)]" : ""}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-3 flex items-start gap-4">

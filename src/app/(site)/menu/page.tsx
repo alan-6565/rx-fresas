@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { toppings } from "@/lib/data";
 import { getMenu } from "@/lib/catalog";
@@ -22,7 +21,7 @@ const BADGES: Record<string, string> = { otono: "Temporada" };
 
 function Toppings() {
   return (
-    <section className="mt-16 rounded-[2rem] bg-blush px-6 py-8 sm:px-10 grid md:grid-cols-[auto_1fr] gap-8 items-center">
+    <section id="toppings" className="mt-16 scroll-mt-40 rounded-[2rem] bg-blush px-6 py-8 sm:px-10 grid md:grid-cols-[auto_1fr] gap-8 items-center">
       <h2 className="font-hand text-5xl leading-none text-ink">
         Agrega tus <br className="hidden md:block" />
         Toppings <span className="text-rose">♡</span>
@@ -45,11 +44,10 @@ function Toppings() {
 }
 
 export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
-  const [{ cat, crear }, menu] = await Promise.all([searchParams, getMenu()]);
+  const [{ crear }, menu] = await Promise.all([searchParams, getMenu()]);
   // Empty categories stay off the menu, except Extras, which explains the toppings
   const categories = menu.categories.filter((c) => c.id === "extras" || menu.items.some((i) => i.category === c.id));
-  const current = categories.find((c) => c.id === cat) ?? categories[0];
-  const active = current?.id;
+  const sections = categories.map((c) => ({ id: c.id, label: c.label, title: c.title, badge: BADGES[c.id], items: menu.items.filter((i) => i.category === c.id) }));
 
   return (
     <>
@@ -61,27 +59,23 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
         >
           {categories.map((c) => {
             const Icon = ICONS[c.id] ?? SparkleIcon;
-            const on = c.id === active;
             return (
-              <Link
+              <a
                 key={c.id}
-                href={`/menu?cat=${c.id}`}
-                scroll={false}
-                className={`relative shrink-0 min-w-36 flex flex-col items-center gap-2 rounded-2xl border px-5 py-4 font-bold transition-all hover:-translate-y-0.5 ${
-                  on ? "bg-rose border-rose text-white shadow-lg shadow-rose/30" : "bg-white/90 border-white text-ink shadow-[0_6px_20px_rgba(232,80,106,0.10)] backdrop-blur hover:text-rose"
-                }`}
+                href={`#${c.id}`}
+                className={`relative shrink-0 min-w-36 flex flex-col items-center gap-2 rounded-2xl border px-5 py-4 font-bold transition-all hover:-translate-y-0.5 bg-white/90 border-white text-ink shadow-[0_6px_20px_rgba(232,80,106,0.10)] backdrop-blur hover:border-rose hover:text-rose`}
               >
                 {BADGES[c.id] && (
                   <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-rose px-2.5 py-0.5 text-[11px] font-bold text-white shadow">{BADGES[c.id]}</span>
                 )}
-                <Icon className="w-8 h-8" />
+                <Icon className="w-8 h-8 text-rose" />
                 {c.label}
-              </Link>
+              </a>
             );
           })}
         </nav>
 
-        <MenuItems title={current?.title ?? "Pronto"} items={menu.items.filter((i) => i.category === active)} all={menu.items} />
+        <MenuItems sections={sections} />
 
         <Toppings />
       </div>

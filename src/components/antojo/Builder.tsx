@@ -110,8 +110,8 @@ export function Builder({ items, initialId, sheet, onAdded }: { items: Item[]; i
   return (
     <div className={`grid gap-6 md:grid-cols-[1fr_1.05fr] items-start ${sheet ? "" : "mt-10"}`}>
       {/* Live cup */}
-      <section className={`md:sticky ${sheet ? "md:top-4" : "md:top-28"} rounded-[2rem] border border-line bg-gradient-to-b from-blush to-cream p-5 sm:p-8 text-center shadow-sm`}>
-        <div className="mx-auto max-w-[230px] sm:max-w-[280px] lg:max-w-[380px]">
+      <section className={`md:sticky ${sheet ? "md:top-0 p-4 sm:p-6" : "md:top-28 p-5 sm:p-8"} rounded-[2rem] border border-line bg-gradient-to-b from-blush to-cream text-center shadow-sm`}>
+        <div className={`mx-auto ${sheet ? "max-w-[170px] sm:max-w-[240px] lg:max-w-[320px]" : "max-w-[230px] sm:max-w-[280px] lg:max-w-[380px]"}`}>
           <CupPreview look={look} label={`${base.name}: ${summary}`} />
         </div>
         <p className="mt-2 font-hand text-4xl leading-none">{base.name}</p>
@@ -120,7 +120,7 @@ export function Builder({ items, initialId, sheet, onAdded }: { items: Item[]; i
       </section>
 
       {/* Steps */}
-      <section className="rounded-[2rem] border border-line bg-white p-5 sm:p-8 shadow-sm pb-28 lg:pb-8">
+      <section className={`rounded-[2rem] border border-line bg-white p-5 sm:p-8 shadow-sm ${sheet ? "" : "pb-28 lg:pb-8"}`}>
         {favs.length > 0 && (
           <div className="mb-6 rounded-2xl bg-blush/60 p-4">
             <p className="flex items-center gap-2 font-bold">
@@ -209,7 +209,13 @@ export function Builder({ items, initialId, sheet, onAdded }: { items: Item[]; i
         )}
 
         {/* Price + add: a bar stuck to the bottom on phones */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0">
+        <div
+          className={
+            sheet
+              ? "sticky bottom-0 -mx-5 -mb-5 mt-6 rounded-b-[2rem] border-t border-line bg-white/95 px-5 py-3 backdrop-blur sm:-mx-8 sm:-mb-8 sm:px-8 sm:py-4"
+              : "fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:static lg:mt-6 lg:border-0 lg:bg-transparent lg:p-0"
+          }
+        >
           <div className="mx-auto flex max-w-xl items-center gap-3 lg:max-w-none">
             <span className="shrink-0">
               <span className="block text-xs text-ink-soft">Total</span>

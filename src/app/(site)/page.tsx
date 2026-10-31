@@ -21,25 +21,25 @@ const features = [
     icon: StrawberryIcon,
     title: "Fresas con Crema",
     sub: "Frescas y deliciosas",
-    href: "/menu?cat=fresas",
+    href: "/menu#fresas",
   },
   {
     icon: CupIcon,
     title: "Cafés Fríos y Calientes",
     sub: "Para cualquier momento",
-    href: "/menu?cat=cafes",
+    href: "/menu#cafes",
   },
   {
     icon: PancakeIcon,
     title: "Mini Pancakes",
     sub: "El antojo perfecto",
-    href: "/menu?cat=pancakes",
+    href: "/menu#pancakes",
   },
   {
     icon: LeafIcon,
     title: "Especiales de Temporada",
     sub: "Sabores únicos",
-    href: "/menu?cat=otono",
+    href: "/menu#otono",
   },
 ];
 
@@ -186,7 +186,7 @@ export default async function Home() {
               <p className="mt-4 text-lg text-cream/80">
                 Bebidas de temporada que te van a encantar ♥
               </p>
-              <Button href="/menu?cat=otono" className="mt-8">
+              <Button href="/menu#otono" className="mt-8">
                 Pídelas ya
               </Button>
             </div>
