@@ -1,6 +1,6 @@
 "use client";
 
-import { CLOSING_SOON_MINUTES, formatTime, mapsUrl, stopDayLabel, upcomingStops, type Spot, type Stop } from "@/lib/schedule";
+import { CLOSING_SOON_MINUTES, formatTime, mapsUrl, stopDayLabel, upcomingStops, whenLabel, type Spot, type Stop } from "@/lib/schedule";
 import { useNow } from "@/components/TruckNow";
 import { Photo } from "@/components/ui";
 import { ArrowRightIcon, CalendarIcon, ClockIcon, PinIcon } from "@/components/icons";
@@ -69,7 +69,7 @@ export function StopCards({ spots }: { spots: Spot[] }) {
                 {closingSoon ? `Cierra en ${first.end - left} min` : "Abierto"}
               </span>
             ) : (
-              <span className="rounded-full bg-[#f6eeec] px-3 py-1.5 text-sm font-semibold text-ink-soft">Abre a las {formatTime(first.start)}</span>
+              <span className="rounded-full bg-[#f6eeec] px-3 py-1.5 text-sm font-semibold text-ink-soft">Abre {first.offset === 0 ? "hoy" : whenLabel(first, now)} a las {formatTime(first.start)}</span>
             )}
           </div>
           <h2 className="mt-4 font-hand text-4xl sm:text-5xl leading-[0.95]">{first.spot.name}</h2>
@@ -94,7 +94,7 @@ export function StopCards({ spots }: { spots: Spot[] }) {
             <span>
               <span className="block font-bold uppercase tracking-wide">{first.openNow ? "Próxima parada" : "Después"}</span>
               <span className="block text-ink-soft">
-                Abre {second.offset === 0 ? "" : second.offset === 1 ? "mañana " : `el ${stopDayLabel(second.offset, now).split(" ")[0].toLowerCase()} `}a las {formatTime(second.start)}
+                Abre {whenLabel(second, now)}, {formatTime(second.start)}
               </span>
             </span>
           </div>

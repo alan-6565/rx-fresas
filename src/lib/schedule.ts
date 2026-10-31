@@ -204,12 +204,14 @@ export type Stop = { spot: Spot; offset: number; start: number; end: number; ope
 /**
  * The truck's stops from now on, soonest first: today's (including one open
  * right now), then the coming week. Used for "Estamos aquí ahora" and
- * "Próxima parada".
+ * "Próxima parada". After the first, each stop is a different spot when there
+ * is one, so the cards show where the truck goes next rather than the same
+ * corner again tomorrow.
  */
 export function upcomingStops(spots: Spot[], now = new Date(), limit = 2): Stop[] {
   const clock = pacificClock(now);
-  const stops: Stop[] = [];
-  for (let offset = 0; offset < 8 && stops.length < limit; offset++) {
+  const all: Stop[] = [];
+  for (let offset = 0; offset < 8; offset++) {
     const date = pacificDate(offset, now);
     const day: Stop[] = [];
     for (const spot of spots) {
@@ -220,9 +222,28 @@ export function upcomingStops(spots: Spot[], now = new Date(), limit = 2): Stop[
       if (offset === 0 && end <= clock.minutes) continue;
       day.push({ spot, offset, start, end, openNow: offset === 0 && start <= clock.minutes });
     }
-    stops.push(...day.sort((a, b) => a.start - b.start));
+    all.push(...day.sort((a, b) => a.start - b.start));
   }
-  return stops.slice(0, limit);
+  const picked: Stop[] = [];
+  for (const stop of all) {
+    if (picked.length >= limit) break;
+    if (!picked.some((p) => p.spot.id === stop.spot.id)) picked.push(stop);
+  }
+  // Only one spot on the schedule: its next days fill the rest
+  for (const stop of all) {
+    if (picked.length >= limit) break;
+    if (!picked.includes(stop)) picked.push(stop);
+  }
+  return picked.sort((a, b) => a.offset - b.offset || a.start - b.start);
+}
+
+/** "hoy en la noche", "mañana por la mañana", "el lunes por la mañana", "el próximo sábado en la noche" */
+export function whenLabel(stop: Pick<Stop, "offset" | "start">, now = new Date()) {
+  const part = stop.start < 12 * 60 ? "por la mañana" : stop.start < 18 * 60 ? "por la tarde" : "en la noche";
+  if (stop.offset === 0) return `hoy ${part}`;
+  if (stop.offset === 1) return `mañana ${part}`;
+  const weekday = new Intl.DateTimeFormat("es-MX", { timeZone: TIME_ZONE, weekday: "long" }).format(new Date(now.getTime() + stop.offset * 86_400_000));
+  return `el ${stop.offset >= 7 ? "próximo " : ""}${weekday} ${part}`;
 }
 
 /** "Hoy, jueves 30 de octubre" / "Mañana, viernes 31 de octubre" / "Sábado 1 de noviembre" */
