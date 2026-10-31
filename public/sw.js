@@ -1,6 +1,11 @@
 // Service worker for the staff dashboard app: shows order notifications and
 // opens the Orders screen when one is tapped.
 
+// Take over as soon as a new version is out, instead of waiting for the app to
+// be fully closed (a Home Screen app on the iPad may stay open for days).
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {

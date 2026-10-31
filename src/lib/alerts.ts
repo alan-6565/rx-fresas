@@ -84,6 +84,8 @@ export async function pushState(): Promise<PushState> {
   }
   if (Notification.permission === "denied") return "blocked";
   const reg = await navigator.serviceWorker.getRegistration("/admin");
+  // Pick up a newer notification script whenever the app opens
+  reg?.update().catch(() => {});
   const sub = await reg?.pushManager.getSubscription();
   return sub && Notification.permission === "granted" ? "on" : "off";
 }
