@@ -105,11 +105,27 @@ export function StopCards({ spots }: { spots: Spot[] }) {
             </div>
             <Photo src={second.spot.image} alt={`El food truck en ${second.spot.name}`} className="hidden sm:block lg:hidden xl:block aspect-square rounded-2xl" sizes="144px" />
           </div>
-          <a href={mapsUrl(second.spot)} target="_blank" rel="noreferrer" className="mt-4 ml-1 inline-flex items-center gap-1.5 text-sm font-semibold text-rose hover:underline">
-            Cómo llegar <ArrowRightIcon className="w-4 h-4" />
-          </a>
         </article>
       )}
     </div>
+  );
+}
+
+/** One "Ver en Google Maps" button for whichever stop is current (or next); switches at closing time */
+export function CurrentStopMapButton({ spots }: { spots: Spot[] }) {
+  const now = useNow();
+  const [stop] = now ? upcomingStops(spots, now, 1) : [];
+  if (!stop) return null;
+  return (
+    <a
+      href={mapsUrl(stop.spot)}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-5 py-3 shadow-md"
+    >
+      <PinIcon className="w-5 h-5 shrink-0" />
+      Ver {stop.spot.name} en Google Maps
+      <ArrowRightIcon className="w-4 h-4 shrink-0" />
+    </a>
   );
 }

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getMenu, getSpots } from "@/lib/catalog";
-import { mapsUrl } from "@/lib/schedule";
 import { PageTop, Photo } from "@/components/ui";
-import { StopCards } from "@/components/StopCards";
+import { CurrentStopMapButton, StopCards } from "@/components/StopCards";
 import { SpotsMap } from "@/components/SpotsMap";
 import { ArrowRightIcon, CupIcon, HeartDoodle, PancakeIcon, PinIcon, StrawberryIcon } from "@/components/icons";
 
@@ -76,21 +75,7 @@ export default async function LocationsPage() {
             ) : (
               <p className="mt-4 flex-1 text-ink-soft">Pronto.</p>
             )}
-            {pinned.length > 0 && (
-              <div className="mt-4 grid gap-2">
-                {pinned.map((s) => (
-                  <a
-                    key={s.id}
-                    href={mapsUrl(s)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-5 py-2.5 text-sm shadow-md"
-                  >
-                    Ver {s.name} en Google Maps <ArrowRightIcon className="w-4 h-4 shrink-0" />
-                  </a>
-                ))}
-              </div>
-            )}
+            <CurrentStopMapButton spots={spots} />
           </section>
         </div>
       </PageTop>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { money, toppings } from "@/lib/data";
 import { getMenu } from "@/lib/catalog";
-import { PLATFORM_FEE_PER_ITEM } from "@/lib/pricing";
 import { Heading, PageTop, Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
 import { CupIcon, LeafIcon, PancakeIcon, SparkleIcon, StrawberryIcon } from "@/components/icons";
@@ -58,10 +57,6 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
         </Heading>
       </div>
 
-      <p className="mx-auto mt-6 max-w-2xl rounded-2xl bg-blush px-5 py-3 text-center text-sm text-ink">
-        <strong>Pedidos en línea:</strong> se agrega una tarifa de servicio de {money(PLATFORM_FEE_PER_ITEM / 100)} por artículo y el procesamiento de
-        tarjeta. Los precios del menú son los mismos que en el truck.
-      </p>
 
       <nav className="mt-8 flex gap-3 overflow-x-auto no-scrollbar pb-2 lg:grid" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
         {categories.map((c) => {
