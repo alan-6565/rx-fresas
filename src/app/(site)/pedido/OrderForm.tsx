@@ -181,8 +181,8 @@ export default function OrderForm({ spots }: { spots: Spot[] }) {
                 </select>
               </label>
             </div>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" className={input} />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Teléfono" type="tel" className={input} />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" autoComplete="name" className={input} />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Teléfono (10 números)" type="tel" autoComplete="tel-national" inputMode="tel" className={input} />
             <label className="block">
               <Label>Notas (opcional)</Label>
               <textarea

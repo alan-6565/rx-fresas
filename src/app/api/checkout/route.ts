@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cleanPhone } from "@/lib/business";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
@@ -25,10 +26,13 @@ const bad = (error: string, status = 400) => NextResponse.json({ error }, { stat
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as Body;
   const name = body.name?.trim().slice(0, 80) ?? "";
-  const phone = body.phone?.trim().slice(0, 30) ?? "";
+  const rawPhone = body.phone?.trim().slice(0, 30) ?? "";
+  // Saved as (510) 555-1234 so staff can call and customers group correctly
+  const phone = cleanPhone(rawPhone);
   const notes = body.notes?.trim().slice(0, 500) || null;
 
-  if (!name || !phone) return bad("Agrega tu nombre y teléfono.");
+  if (!name || !rawPhone) return bad("Agrega tu nombre y teléfono.");
+  if (!phone) return bad("Escribe un teléfono de 10 números para poder avisarte de tu orden.");
   if (!Array.isArray(body.lines) || body.lines.length === 0) return bad("Tu orden está vacía.");
 
   const [{ items: menu }, spots] = await Promise.all([getMenu(), getSpots()]);

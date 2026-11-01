@@ -7,6 +7,8 @@ import { Button, Heading, LoveNote, Photo } from "@/components/ui";
 import { Handle, Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
 import { Reveal } from "@/components/Reveal";
+import { HomePromos } from "@/components/promo/Promos";
+import { getPromotions } from "@/lib/promotions-store";
 import {
   CupIcon,
   HeartDoodle,
@@ -44,7 +46,7 @@ const features = [
 ];
 
 export default async function Home() {
-  const [{ categories, items }, photos] = await Promise.all([getMenu(), getSitePhotos()]);
+  const [{ categories, items }, photos, promotions] = await Promise.all([getMenu(), getSitePhotos(), getPromotions()]);
   // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
   // (one card per photo, so two sizes of the same cup don't show twice)
   const cafes = (
@@ -129,6 +131,8 @@ export default async function Home() {
           <LoveNote className="hidden lg:block text-2xl pl-6" />
         </div>
       </section>
+
+      <HomePromos promotions={promotions.filter((p) => p.on && p.homeCard)} />
 
       {/* Menu preview */}
       <Reveal>
