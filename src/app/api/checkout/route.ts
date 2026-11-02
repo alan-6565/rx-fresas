@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanEmail, cleanPhone } from "@/lib/business";
-import { addressLine, addressProblem, type Address } from "@/lib/delivery";
+import { addressLine, milesText, type Address } from "@/lib/delivery";
+import { quoteDelivery } from "@/lib/geo";
 import { getDelivery } from "@/lib/delivery-store";
 import { checkRewardCode, linkRewardCode, pointsFor } from "@/lib/rewards";
 import { freeDrinkCents, POINTS_FOR_DRINK } from "@/lib/rewards-rules";
 import { getMenu, getSpots } from "@/lib/catalog";
-import { pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
+import { deliverySlots, pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
 import { pickedSummary } from "@/lib/options";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -48,27 +49,31 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(body.lines) || body.lines.length === 0) return bad("Tu orden está vacía.");
 
   const [{ items: menu }, spots, delivery] = await Promise.all([getMenu(), getSpots(), getDelivery()]);
-  const spot = spots.find((l) => l.name === body.location);
-  if (!spot) return bad("Elige una ubicación.");
+  const day = pickupDays.find((d) => d === body.day) as PickupDay | undefined;
+  if (!day) return bad("Elige una hora.");
+  // A few minutes less lead time than the form, so a time picked just before it rolls over still works
+  const lead = 5 + (delivering ? delivery.extraMinutes : 0);
+  // Deliveries leave from wherever the truck is parked at that time
+  const spot = delivering ? deliverySlots(spots, day, lead).find((s) => s.time === body.time)?.spot : spots.find((l) => l.name === body.location);
+  if (!spot) return bad(delivering ? "Esa hora de entrega ya no está disponible. Elige otra." : "Elige una ubicación.");
+  if (!delivering && !pickupSlots(spot, day, lead).includes(body.time ?? "")) return bad("Esa hora de pickup ya no está disponible. Elige otra.");
 
   let address: string | null = null;
+  let deliveryFee = 0;
+  let miles = 0;
   if (delivering) {
     if (!delivery.on) return bad("Por ahora solo tenemos pickup en el truck.");
     const a = { street: "", unit: "", city: "", zip: "", ...body.address };
     const clean = { street: String(a.street).trim().slice(0, 120), unit: String(a.unit).trim().slice(0, 20), city: String(a.city).trim().slice(0, 60), zip: String(a.zip).trim() };
-    const problem = addressProblem(clean, delivery);
-    if (problem) return bad(problem);
+    const dq = await quoteDelivery(clean, spot, delivery);
+    if ("error" in dq) return bad(dq.error);
     address = addressLine(clean);
+    deliveryFee = dq.feeCents;
+    miles = dq.miles;
   }
-
-  const day = pickupDays.find((d) => d === body.day) as PickupDay | undefined;
-  // A few minutes less lead time than the form, so a time picked just before it rolls over still works
-  const lead = 5 + (delivering ? delivery.extraMinutes : 0);
-  if (!day || !pickupSlots(spot, day, lead).includes(body.time ?? "")) return bad(`Esa hora de ${delivering ? "entrega" : "pickup"} ya no está disponible. Elige otra.`);
 
   // Prices, fees and the total all come from the server's menu, never the browser
   const lines = body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty), options: Array.isArray(l.options) ? l.options.map(String) : [] }));
-  const deliveryFee = delivering ? delivery.feeCents : 0;
   let q;
   try {
     q = quote(lines, menu, { deliveryFee });
@@ -161,7 +166,7 @@ export async function POST(req: NextRequest) {
           quantity: qty,
           price_data: { currency: "usd", unit_amount: unit, product_data: { name: item.name, description: pickedSummary(picked) || item.desc || undefined } },
         })),
-        ...(q.deliveryFee ? [fee("Entrega a domicilio", q.deliveryFee)] : []),
+        ...(q.deliveryFee ? [fee(`Entrega a domicilio (${milesText(miles)})`, q.deliveryFee)] : []),
         fee(`Tarifa de servicio ($1 × ${q.items})`, q.platformFee),
         fee("Procesamiento de tarjeta", q.cardFee),
       ],
@@ -169,7 +174,7 @@ export async function POST(req: NextRequest) {
       customer_email: email,
       payment_intent_data: {
         application_fee_amount: q.platformFee,
-        description: `Pedido R&X · ${delivering ? `Entrega · ${address}` : spot.name} · ${day} ${body.time}`,
+        description: `Pedido R&X · ${delivering ? `Entrega ${milesText(miles)} desde ${spot.name} · ${address}` : spot.name} · ${day} ${body.time}`,
         metadata: { orderId: order.id },
       },
       metadata: { orderId: order.id },

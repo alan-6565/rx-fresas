@@ -7,7 +7,6 @@ import { saveDelivery } from "@/lib/delivery-store";
 export async function PUT(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const settings = cleanDelivery(body);
-  if (settings.on && settings.zips.length === 0) return bad("Add at least one ZIP code you deliver to");
   try {
     await saveDelivery(settings);
   } catch {

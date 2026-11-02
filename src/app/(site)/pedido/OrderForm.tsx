@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { money } from "@/lib/data";
 import { cleanEmail, cleanPhone } from "@/lib/business";
-import { addressProblem, type Address, type DeliverySettings } from "@/lib/delivery";
-import { pacificMinutes, pickupDays, pickupSlots, slotMinutes, truckStatus, type PickupDay, type Spot } from "@/lib/schedule";
+import { addressProblem, milesText, type Address, type DeliverySettings } from "@/lib/delivery";
+import { deliverySlots, pacificMinutes, pickupDays, pickupSlots, slotMinutes, truckStatus, type PickupDay, type Spot } from "@/lib/schedule";
 import { statusLine, useNow } from "@/components/TruckNow";
 import { PLATFORM_FEE_PER_ITEM, quote } from "@/lib/pricing";
 import { freeDrinkCents, POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
@@ -19,7 +19,9 @@ import { AppleIcon, ArrowRightIcon, BagIcon, BoltIcon, CarIcon, ClockIcon, Heart
 const input = "w-full rounded-xl border border-line bg-white px-4 py-3 placeholder:text-ink-soft/50 focus:outline-none focus:border-wine";
 const LEAD = 15;
 
-type Choice = { day: PickupDay; time: string };
+/** `spot`: for delivery, where the truck is parked at that time */
+type Choice = { day: PickupDay; time: string; spot?: string };
+type DeliveryQuote = { miles: number; feeCents: number; label: string } | { error: string };
 /** undefined while loading, null if it couldn't be checked */
 type Rewards = { points: number; canRedeem: boolean } | null | undefined;
 
@@ -156,14 +158,43 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
   const delivering = type === "delivery";
   const truck = now ? truckStatus(spots, now) : null;
   const truckSpot = truck && truck.state !== "none" ? truck.spot : spots[0];
-  // Delivery leaves from wherever the truck is; pickup is wherever they choose
-  const spot = delivering ? truckSpot : (spots.find((s) => s.name === spotName) ?? truckSpot);
-  const spotNow = now && spot ? truckStatus([spot], now) : null;
+  const pickupSpot = spots.find((s) => s.name === spotName) ?? truckSpot;
   const lead = LEAD + (delivering ? delivery.extraMinutes : 0);
-  const choices: Choice[] = spot && now ? pickupDays.flatMap((day) => pickupSlots(spot, day, lead, now).map((time) => ({ day, time }))) : [];
+  // Pickup times come from the chosen spot; delivery times from every spot, leaving from wherever the truck is then
+  const choices: Choice[] = !now
+    ? []
+    : delivering
+      ? pickupDays.flatMap((day) => deliverySlots(spots, day, lead, now).map((s) => ({ day, time: s.time, spot: s.spot.name })))
+      : pickupSpot
+        ? pickupDays.flatMap((day) => pickupSlots(pickupSpot, day, lead, now).map((time) => ({ day, time })))
+        : [];
   // A time that has passed (or a switch of spot) falls back to the soonest one
-  const valid = chosen && choices.some((c) => c.day === chosen.day && c.time === chosen.time) ? chosen : null;
-  const when = valid ?? choices[0] ?? null;
+  const valid = (chosen && choices.find((c) => c.day === chosen.day && c.time === chosen.time)) ?? null;
+  const when = valid || choices[0] || null;
+  const spot = delivering ? spots.find((s) => s.name === when?.spot) : pickupSpot;
+  const spotNow = now && spot ? truckStatus([spot], now) : null;
+
+  // Delivery fee: miles from the truck's spot to the address, worked out on the server
+  const [dq, setDq] = useState<{ key: string; quote: DeliveryQuote } | null>(null);
+  const addrMissing = delivering ? addressProblem(address) : "";
+  const quoteKey = delivering && !addrMissing && spot ? JSON.stringify([address.street.trim(), address.city.trim(), address.zip, spot.name]) : "";
+  useEffect(() => {
+    if (!quoteKey) return;
+    const [street, city, zip, location] = JSON.parse(quoteKey);
+    const t = setTimeout(async () => {
+      let quote: DeliveryQuote;
+      try {
+        const res = await fetch("/api/delivery", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: { street, city, zip }, location }) });
+        quote = await res.json();
+      } catch {
+        quote = { error: "No pudimos calcular tu entrega. Intenta otra vez." };
+      }
+      setDq({ key: quoteKey, quote });
+    }, 600);
+    return () => clearTimeout(t);
+  }, [quoteKey]);
+  const dQuote = quoteKey && dq?.key === quoteKey ? dq.quote : null;
+  const dOk = dQuote && "feeCents" in dQuote ? dQuote : null;
 
   const cleanPh = cleanPhone(phone);
   const cleanEm = cleanEmail(email);
@@ -171,10 +202,10 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
   const hasDrink = freeDrinkCents(quote(lines, cart.menu).lines) > 0;
   // A free drink only counts while there's a drink in the order
   const reward = hasDrink ? rewardCode : "";
-  const q = quote(lines, cart.menu, { deliveryFee: delivering ? delivery.feeCents : 0, discount: reward ? freeDrinkCents : undefined });
+  const q = quote(lines, cart.menu, { deliveryFee: dOk ? dOk.feeCents : 0, discount: reward ? freeDrinkCents : undefined });
   const serviceFee = q.platformFee + q.cardFee;
 
-  const addrProblem = delivering ? addressProblem(address, delivery) : "";
+  const addrProblem = !delivering ? "" : addrMissing || (!dQuote ? "Calculando tu entrega…" : "error" in dQuote ? dQuote.error : "");
   const minProblem = delivering && q.subtotal < delivery.minCents ? `El mínimo para entrega es ${money(delivery.minCents / 100)} en comida y bebidas.` : "";
   const problems = {
     cart: cart.count === 0 ? "Agrega algo a tu orden primero." : "",
@@ -348,10 +379,14 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                           className={`${input} ${tried && addrProblem ? "border-rose-dark" : ""}`}
                         />
                       </div>
-                      <p className={`mt-2 text-sm ${address.zip.length === 5 && addrProblem ? "font-semibold text-rose-dark" : "text-ink-soft"}`}>
-                        {address.zip.length === 5 && addrProblem
-                          ? addrProblem
-                          : `Entrega ${money(delivery.feeCents / 100)} · mínimo ${money(delivery.minCents / 100)} · ZIP ${delivery.zips.join(", ")}`}
+                      <p className={`mt-2 text-sm ${dQuote && "error" in dQuote ? "font-semibold text-rose-dark" : dOk ? "font-semibold text-wine" : "text-ink-soft"}`}>
+                        {dOk
+                          ? `📍 ${dOk.label} desde ${spot?.name} · Entrega ${money(dOk.feeCents / 100)}`
+                          : dQuote && "error" in dQuote
+                            ? dQuote.error
+                            : quoteKey
+                              ? "Calculando tu entrega…"
+                              : `La entrega se cobra por milla desde donde esté el truck (hasta ${milesText(delivery.maxMiles)}) · mínimo ${money(delivery.minCents / 100)}`}
                       </p>
                     </div>
                   ) : (
@@ -568,8 +603,8 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
             )}
             {delivering && (
               <div className="flex justify-between">
-                <dt>Entrega</dt>
-                <dd>{money(q.deliveryFee / 100)}</dd>
+                <dt>Entrega{dOk ? ` (${dOk.label})` : ""}</dt>
+                <dd>{dOk ? money(q.deliveryFee / 100) : "—"}</dd>
               </div>
             )}
             <div className="flex justify-between">

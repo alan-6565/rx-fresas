@@ -92,6 +92,16 @@ export function pickupSlots(spot: Spot, day: PickupDay, leadMinutes = 15, now = 
   return slots;
 }
 
+/**
+ * Delivery times across every spot, each with the spot the truck is parked at
+ * then (deliveries leave from there). The first spot listed wins a tie.
+ */
+export function deliverySlots(spots: Spot[], day: PickupDay, leadMinutes = 15, now = new Date()): { time: string; spot: Spot }[] {
+  const seen = new Map<string, Spot>();
+  for (const spot of spots) for (const time of pickupSlots(spot, day, leadMinutes, now)) if (!seen.has(time)) seen.set(time, spot);
+  return [...seen.entries()].map(([time, spot]) => ({ time, spot })).sort((a, b) => slotMinutes(a.time) - slotMinutes(b.time));
+}
+
 /** Minutes since midnight, Pacific time */
 export const pacificMinutes = (now = new Date()) => pacificClock(now).minutes;
 
