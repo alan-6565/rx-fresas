@@ -28,6 +28,13 @@ const NEXT_STEP: Partial<Record<Status, { to: Status; label: string; cls: string
   ready: { to: "picked_up", label: "Picked Up", cls: "bg-emerald-600 hover:bg-emerald-700 text-white" },
 };
 
+/** Delivery orders say "Out for Delivery" and "Delivered" instead */
+const stepFor = (o: StaffOrder) => {
+  const step = NEXT_STEP[o.fulfillment_status];
+  if (!step || o.fulfillment_type !== "delivery") return step;
+  return { ...step, label: step.to === "ready" ? "Out for Delivery" : step.to === "picked_up" ? "Delivered" : step.label };
+};
+
 const itemsText = (o: StaffOrder) =>
   o.order_items.map((i) => `${i.name}${i.options?.length ? ` (${pickedSummary(i.options)})` : ""} x${i.quantity}`).join(", ");
 const groupedOptions = (options: { group: string; name: string }[] | null) => {
@@ -246,7 +253,7 @@ export default function OrdersPage() {
               </thead>
               <tbody>
                 {shown.map((o) => {
-                  const step = NEXT_STEP[o.fulfillment_status];
+                  const step = stepFor(o);
                   const isNew = o.fulfillment_status === "new";
                   return (
                     <tr key={o.id} className={`border-b border-line last:border-0 ${isNew ? "bg-amber-50/70" : "hover:bg-cream/60"}`}>
@@ -260,9 +267,16 @@ export default function OrdersPage() {
                         {o.notes && <span className="mt-0.5 block text-xs text-rose-dark line-clamp-1">Note: {o.notes}</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-0.5 text-xs font-semibold text-rose">
-                          <BagIcon className="w-3.5 h-3.5" /> Pickup
-                        </span>
+                        {o.fulfillment_type === "delivery" ? (
+                          <span className="block max-w-48">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">🚗 Delivery</span>
+                            <span className="mt-0.5 block text-xs text-ink-soft line-clamp-2">{o.delivery_address}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-0.5 text-xs font-semibold text-rose">
+                            <BagIcon className="w-3.5 h-3.5" /> Pickup
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <StatusPill status={o.fulfillment_status} />
@@ -299,7 +313,7 @@ export default function OrdersPage() {
             {/* Cards on phones */}
             <ul className="md:hidden divide-y divide-line">
               {shown.map((o) => {
-                const step = NEXT_STEP[o.fulfillment_status];
+                const step = stepFor(o);
                 return (
                   <li key={o.id} className={`p-4 ${o.fulfillment_status === "new" ? "bg-amber-50/70" : ""}`}>
                     <div className="flex items-start justify-between gap-3">
@@ -308,7 +322,7 @@ export default function OrdersPage() {
                           #{o.order_number} · {o.customer_name}
                         </p>
                         <p className="text-xs text-ink-soft">
-                          {o.pickup_time} · {o.location}
+                          {o.pickup_time} · {o.fulfillment_type === "delivery" ? `🚗 ${o.delivery_address}` : o.location}
                         </p>
                       </div>
                       <StatusPill status={o.fulfillment_status} />
@@ -345,7 +359,7 @@ export default function OrdersPage() {
 
 function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder; busy: boolean; onClose: () => void; onStatus: (s: Status) => void }) {
   const [confirmCancel, setConfirmCancel] = useState(false);
-  const step = NEXT_STEP[o.fulfillment_status];
+  const step = stepFor(o);
   const back: Partial<Record<Status, Status>> = { preparing: "new", ready: "preparing", picked_up: "ready" };
   const canCancel = ["new", "preparing", "ready"].includes(o.fulfillment_status);
 
@@ -375,11 +389,20 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
             <a href={`tel:${o.customer_phone.replace(/[^\d+]/g, "")}`} className="mt-1 inline-flex items-center gap-1.5 text-rose font-semibold">
               <PhoneIcon className="w-4 h-4" /> {phoneText(o.customer_phone)}
             </a>
-            <p className="mt-3 text-sm">
-              <strong>Pickup:</strong> {dayText(o.pickup_date)} at {o.pickup_time}
-              <br />
-              <strong>Location:</strong> {o.location}
-            </p>
+            {o.fulfillment_type === "delivery" ? (
+              <div className="mt-3 rounded-xl border-2 border-violet-200 bg-violet-50 p-3 text-sm">
+                <p className="font-bold text-violet-800">🚗 Delivery · {dayText(o.pickup_date)} at {o.pickup_time}</p>
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(o.delivery_address ?? "")}`} target="_blank" rel="noreferrer" className="mt-1 block font-semibold text-violet-700 underline">
+                  {o.delivery_address}
+                </a>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm">
+                <strong>Pickup:</strong> {dayText(o.pickup_date)} at {o.pickup_time}
+                <br />
+                <strong>Location:</strong> {o.location}
+              </p>
+            )}
           </Card>
 
           {o.notes && (
@@ -406,9 +429,21 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
                 </li>
               ))}
             </ul>
+            {o.discount_cents > 0 && (
+              <div className="mt-3 pt-3 border-t border-line flex justify-between text-sm font-semibold text-violet-700">
+                <span>⭐ Free drink (100 points)</span>
+                <span>−{money(o.discount_cents / 100)}</span>
+              </div>
+            )}
+            {o.delivery_fee_cents > 0 && (
+              <div className={`${o.discount_cents ? "mt-1" : "mt-3 pt-3 border-t border-line"} flex justify-between text-sm`}>
+                <span>Delivery fee</span>
+                <span>{money(o.delivery_fee_cents / 100)}</span>
+              </div>
+            )}
             <div className="mt-3 pt-3 border-t border-line flex justify-between font-bold">
               <span>Your total</span>
-              <span>{money(o.subtotal_cents / 100)}</span>
+              <span>{money((o.subtotal_cents - o.discount_cents + o.delivery_fee_cents) / 100)}</span>
             </div>
             <p className="mt-1 text-xs text-ink-soft">
               The customer also paid {money((o.platform_fee_cents + o.card_fee_cents) / 100)} in service and card fees ({money(o.total_cents / 100)} total).

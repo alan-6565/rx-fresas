@@ -1,5 +1,6 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
+import { POINTS_PER_ORDER } from "@/lib/rewards-rules";
 
 // Customers come from paid orders, told apart by phone number (last 10 digits).
 // Spending is R&X's part only: menu prices, without the service and card fees.
@@ -13,6 +14,8 @@ export type Customer = {
   email: string;
   orders: number;
   spentCents: number;
+  /** Puntos R&X balance */
+  points: number;
   first: string;
   last: string;
   favorite: string;
@@ -27,6 +30,7 @@ type Row = {
   customer_phone: string;
   customer_email: string | null;
   subtotal_cents: number;
+  points_redeemed: number;
   payment_status: string;
   location: string;
   order_items: { name: string; quantity: number }[];
@@ -36,7 +40,7 @@ type Row = {
 export async function getCustomers(): Promise<{ customers: Customer[]; asOf: number }> {
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("id, order_number, created_at, customer_name, customer_phone, customer_email, subtotal_cents, payment_status, location, order_items(name, quantity)")
+    .select("id, order_number, created_at, customer_name, customer_phone, customer_email, subtotal_cents, points_redeemed, payment_status, location, order_items(name, quantity)")
     .in("payment_status", ["paid", "refunded"])
     .order("created_at", { ascending: false })
     .limit(10000);
@@ -64,6 +68,7 @@ export async function getCustomers(): Promise<{ customers: Customer[]; asOf: num
       email: rows.find((r) => r.customer_email)?.customer_email ?? "",
       orders: paid.length,
       spentCents: paid.reduce((n, r) => n + r.subtotal_cents, 0),
+      points: Math.max(0, paid.length * POINTS_PER_ORDER - paid.reduce((n, r) => n + r.points_redeemed, 0)),
       first: rows[rows.length - 1].created_at,
       last: newest.created_at,
       favorite,

@@ -20,6 +20,10 @@ export type Quote = {
   lines: PricedLine[];
   items: number;
   subtotal: number;
+  /** Free drink paid for with points */
+  discount: number;
+  /** R&X's delivery charge (no platform fee on it) */
+  deliveryFee: number;
   platformFee: number;
   cardFee: number;
   total: number;
@@ -36,7 +40,7 @@ export function stripeFee(amount: number) {
  * Prices an order from menu ids only, so the browser can't change a price.
  * Unknown (or hidden) ids and bad quantities are rejected rather than skipped.
  */
-export function quote(lines: Line[], menu: Item[]): Quote {
+export function quote(lines: Line[], menu: Item[], extra: { discount?: (lines: PricedLine[]) => number; deliveryFee?: number } = {}): Quote {
   let items = 0;
   let subtotal = 0;
   const priced: PricedLine[] = [];
@@ -52,12 +56,14 @@ export function quote(lines: Line[], menu: Item[]): Quote {
   }
 
   const platformFee = items * PLATFORM_FEE_PER_ITEM;
-  const base = subtotal + platformFee;
+  const discount = Math.min(subtotal, extra.discount?.(priced) ?? 0);
+  const deliveryFee = items === 0 ? 0 : (extra.deliveryFee ?? 0);
+  const base = subtotal - discount + deliveryFee + platformFee;
 
   // Smallest total whose Stripe fee is fully covered by the card fee
   let total = items === 0 ? 0 : Math.ceil((base + STRIPE_FIXED) / (1 - STRIPE_PERCENT));
   while (total > 0 && total - stripeFee(total) < base) total++;
 
   const cardFee = total - base;
-  return { lines: priced, items, subtotal, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
+  return { lines: priced, items, subtotal, discount, deliveryFee, platformFee, cardFee, total, payout: total - stripeFee(total) - platformFee };
 }

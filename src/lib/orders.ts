@@ -2,6 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { notifyStaff } from "@/lib/push";
+import { sendOrderConfirmation } from "@/lib/email";
 
 /**
  * The one place an order becomes paid: the webhook and the confirmation page
@@ -18,13 +19,14 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
     })
     .eq("id", orderId)
     .eq("payment_status", "pending")
-    .select("order_number, customer_name, item_count, subtotal_cents, pickup_time, location");
+    .select("order_number, customer_name, item_count, subtotal_cents, pickup_time, location, fulfillment_type");
   if (error) throw error;
 
   const order = data?.[0];
   if (!order) return false;
 
   // Only the call that flipped it to paid alerts the truck, so nobody gets it twice
+  after(() => sendOrderConfirmation(orderId).catch((e) => console.error("[email] confirmation failed", e)));
   after(() =>
     notifyStaff({
       title: `New order #${order.order_number}`,
@@ -36,10 +38,11 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
   return true;
 }
 
-type SummaryFields = { customer_name: string; item_count: number; subtotal_cents: number; pickup_time: string; location: string };
+type SummaryFields = { customer_name: string; item_count: number; subtotal_cents: number; pickup_time: string; location: string; fulfillment_type?: string };
 
 export function orderSummary(o: SummaryFields) {
-  return `${o.customer_name} · ${o.item_count} item${o.item_count === 1 ? "" : "s"} · $${(o.subtotal_cents / 100).toFixed(2)} · ${o.pickup_time} at ${o.location}`;
+  const where = o.fulfillment_type === "delivery" ? "DELIVERY" : `at ${o.location}`;
+  return `${o.customer_name} · ${o.item_count} item${o.item_count === 1 ? "" : "s"} · $${(o.subtotal_cents / 100).toFixed(2)} · ${o.pickup_time} ${where}`;
 }
 
 export async function cancelUnpaidOrder(orderId: string) {

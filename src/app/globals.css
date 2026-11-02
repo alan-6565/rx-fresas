@@ -7,6 +7,8 @@
   --rose: #e8506a;
   --rose-dark: #d43c57;
   --rose-soft: #f48a9a;
+  --wine: #8c2a3c;
+  --wine-dark: #74202f;
   --ink: #4a1d24;
   --ink-soft: #7d5a5d;
   --night: #1f1416;
@@ -20,6 +22,8 @@
   --color-rose: var(--rose);
   --color-rose-dark: var(--rose-dark);
   --color-rose-soft: var(--rose-soft);
+  --color-wine: var(--wine);
+  --color-wine-dark: var(--wine-dark);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-night: var(--night);

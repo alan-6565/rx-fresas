@@ -5,7 +5,9 @@ import { pickedSummary, type Picked } from "@/lib/options";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { markOrderPaid } from "@/lib/orders";
-import { HeartSolid } from "@/components/icons";
+import { pointsFor } from "@/lib/rewards";
+import { POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
+import { HeartSolid, StarIcon } from "@/components/icons";
 import { ClearCart } from "./ClearCart";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +15,13 @@ export const dynamic = "force-dynamic";
 type Order = {
   id: string;
   customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  fulfillment_type: "pickup" | "delivery";
+  delivery_address: string | null;
+  delivery_fee_cents: number;
+  discount_cents: number;
+  order_number: number | null;
   location: string;
   pickup_day: string;
   pickup_time: string;
@@ -62,6 +71,10 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
   }
 
   const firstName = order.customer_name.split(" ")[0];
+  const delivery = order.fulfillment_type === "delivery";
+  const points = await pointsFor(order.customer_phone)
+    .then((p) => p.points)
+    .catch(() => null);
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
       <ClearCart />
@@ -70,8 +83,38 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
       </span>
       <h1 className="mt-6 font-hand text-6xl">¡Gracias, {firstName}!</h1>
       <p className="mt-4 text-lg">
-        Tu pedido estará listo <strong>{order.pickup_day.toLowerCase()} a las {order.pickup_time}</strong> en <strong>{order.location}</strong>.
+        {delivery ? (
+          <>
+            Llevamos tu pedido a <strong>{order.delivery_address}</strong> {order.pickup_day.toLowerCase()} a las <strong>{order.pickup_time}</strong>.
+          </>
+        ) : (
+          <>
+            Tu pedido estará listo <strong>{order.pickup_day.toLowerCase()} a las {order.pickup_time}</strong> en <strong>{order.location}</strong>.
+          </>
+        )}
       </p>
+      {order.customer_email && (
+        <p className="mt-2 text-ink-soft">
+          Te mandamos la confirmación a <strong>{order.customer_email}</strong>
+          {delivery ? " y te avisamos cuando vaya en camino." : " y te avisamos cuando esté listo."}
+        </p>
+      )}
+
+      {points !== null && (
+        <div className="mt-8 rounded-3xl border border-rose/30 bg-blush/60 p-5 text-left">
+          <p className="flex items-center gap-2 font-bold">
+            <StarIcon className="w-5 h-5 text-rose" /> +{POINTS_PER_ORDER} puntos R&amp;X
+          </p>
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-gradient-to-r from-rose to-wine" style={{ width: `${Math.min(100, (points / POINTS_FOR_DRINK) * 100)}%` }} />
+          </div>
+          <p className="mt-2 text-sm text-ink-soft">
+            {points >= POINTS_FOR_DRINK
+              ? "¡Ya tienes una bebida gratis! Úsala en tu próximo pedido en línea."
+              : `Llevas ${points} de ${POINTS_FOR_DRINK}. Te faltan ${POINTS_FOR_DRINK - points} para una bebida gratis.`}
+          </p>
+        </div>
+      )}
 
       <div className="mt-8 rounded-3xl bg-white border border-line p-5 text-left">
         <ul className="space-y-1.5 text-sm">
@@ -86,13 +129,21 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
           ))}
         </ul>
         <dl className="mt-3 pt-3 border-t border-line space-y-1 text-sm text-ink-soft">
+          {order.discount_cents > 0 && (
+            <div className="flex justify-between font-semibold text-wine">
+              <dt>Bebida gratis ⭐</dt>
+              <dd>−{money(order.discount_cents / 100)}</dd>
+            </div>
+          )}
+          {order.delivery_fee_cents > 0 && (
+            <div className="flex justify-between">
+              <dt>Entrega</dt>
+              <dd>{money(order.delivery_fee_cents / 100)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt>Tarifa de servicio</dt>
-            <dd>{money(order.platform_fee_cents / 100)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt>Procesamiento de tarjeta</dt>
-            <dd>{money(order.card_fee_cents / 100)}</dd>
+            <dd>{money((order.platform_fee_cents + order.card_fee_cents) / 100)}</dd>
           </div>
           <div className="flex justify-between text-base font-bold text-ink">
             <dt>Total pagado</dt>
@@ -100,7 +151,7 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
           </div>
         </dl>
       </div>
-      <p className="mt-4 text-xs text-ink-soft">Orden #{order.id.slice(0, 8).toUpperCase()}</p>
+      <p className="mt-4 text-xs text-ink-soft">Orden #{order.order_number ?? order.id.slice(0, 8).toUpperCase()}</p>
 
       <Link href="/menu" className="mt-8 inline-flex rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-8 py-3">
         Volver al Menú

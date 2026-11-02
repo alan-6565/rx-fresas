@@ -1,5 +1,6 @@
 "use client";
 
+import { POINTS_FOR_DRINK } from "@/lib/rewards-rules";
 import { useMemo, useState } from "react";
 import type { Customer } from "@/lib/customers";
 import { money } from "@/lib/data";
@@ -64,8 +65,8 @@ export function CustomersView({ customers, now }: { customers: Customer[]; now: 
   const download = () => {
     const cell = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
     const rows = [
-      ["Name", "Phone", "Email", "Orders", "Spent", "First order", "Last order", "Favorite"],
-      ...shown.map((c) => [c.name, c.phone, c.email, c.orders, (c.spentCents / 100).toFixed(2), date(c.first), date(c.last), c.favorite]),
+      ["Name", "Phone", "Email", "Orders", "Spent", "Points", "First order", "Last order", "Favorite"],
+      ...shown.map((c) => [c.name, c.phone, c.email, c.orders, (c.spentCents / 100).toFixed(2), c.points, date(c.first), date(c.last), c.favorite]),
     ];
     const blob = new Blob([rows.map((r) => r.map(cell).join(",")).join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
@@ -201,6 +202,7 @@ export function CustomersView({ customers, now }: { customers: Customer[]; now: 
               ["Email", open.email || "—"],
               ["Orders", String(open.orders)],
               ["Spent", money(open.spentCents / 100)],
+              ["Puntos R&X", `⭐ ${open.points} / ${POINTS_FOR_DRINK}${open.points >= POINTS_FOR_DRINK ? " · free drink ready" : ""}`],
               ["Customer since", date(open.first)],
               ["Usually gets", open.favorite || "—"],
             ].map(([k, v]) => (

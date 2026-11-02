@@ -92,6 +92,16 @@ export function pickupSlots(spot: Spot, day: PickupDay, leadMinutes = 15, now = 
   return slots;
 }
 
+/** Minutes since midnight, Pacific time */
+export const pacificMinutes = (now = new Date()) => pacificClock(now).minutes;
+
+/** "6:30 p.m." → 1110 */
+export function slotMinutes(slot: string) {
+  const m = slot.match(/^(\d{1,2}):(\d{2}) (a|p)\.m\.$/);
+  if (!m) return 0;
+  return ((Number(m[1]) % 12) + (m[3] === "p" ? 12 : 0)) * 60 + Number(m[2]);
+}
+
 /** 0 = Sunday, in Pacific time */
 export const pacificWeekday = (now = new Date()) => pacificClock(now).weekday;
 

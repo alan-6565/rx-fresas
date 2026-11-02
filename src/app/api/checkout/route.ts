@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cleanPhone } from "@/lib/business";
+import { cleanEmail, cleanPhone } from "@/lib/business";
+import { addressLine, addressProblem, type Address } from "@/lib/delivery";
+import { getDelivery } from "@/lib/delivery-store";
+import { checkRewardCode, linkRewardCode, pointsFor } from "@/lib/rewards";
+import { freeDrinkCents, POINTS_FOR_DRINK } from "@/lib/rewards-rules";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
@@ -14,6 +18,11 @@ const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
 type Body = {
   name?: string;
   phone?: string;
+  email?: string;
+  type?: "pickup" | "delivery";
+  address?: Partial<Address>;
+  /** Emailed code for a free drink with points */
+  rewardCode?: string;
   notes?: string;
   location?: string;
   day?: string;
@@ -30,40 +39,73 @@ export async function POST(req: NextRequest) {
   // Saved as (510) 555-1234 so staff can call and customers group correctly
   const phone = cleanPhone(rawPhone);
   const notes = body.notes?.trim().slice(0, 500) || null;
+  const email = cleanEmail(body.email ?? "");
+  const delivering = body.type === "delivery";
 
   if (!name || !rawPhone) return bad("Agrega tu nombre y teléfono.");
   if (!phone) return bad("Escribe un teléfono de 10 números para poder avisarte de tu orden.");
+  if (!email) return bad("Escribe tu correo para mandarte la confirmación.");
   if (!Array.isArray(body.lines) || body.lines.length === 0) return bad("Tu orden está vacía.");
 
-  const [{ items: menu }, spots] = await Promise.all([getMenu(), getSpots()]);
+  const [{ items: menu }, spots, delivery] = await Promise.all([getMenu(), getSpots(), getDelivery()]);
   const spot = spots.find((l) => l.name === body.location);
   if (!spot) return bad("Elige una ubicación.");
+
+  let address: string | null = null;
+  if (delivering) {
+    if (!delivery.on) return bad("Por ahora solo tenemos pickup en el truck.");
+    const a = { street: "", unit: "", city: "", zip: "", ...body.address };
+    const clean = { street: String(a.street).trim().slice(0, 120), unit: String(a.unit).trim().slice(0, 20), city: String(a.city).trim().slice(0, 60), zip: String(a.zip).trim() };
+    const problem = addressProblem(clean, delivery);
+    if (problem) return bad(problem);
+    address = addressLine(clean);
+  }
+
   const day = pickupDays.find((d) => d === body.day) as PickupDay | undefined;
   // A few minutes less lead time than the form, so a time picked just before it rolls over still works
-  if (!day || !pickupSlots(spot, day, 5).includes(body.time ?? "")) return bad("Esa hora de pickup ya no está disponible. Elige otra.");
+  const lead = 5 + (delivering ? delivery.extraMinutes : 0);
+  if (!day || !pickupSlots(spot, day, lead).includes(body.time ?? "")) return bad(`Esa hora de ${delivering ? "entrega" : "pickup"} ya no está disponible. Elige otra.`);
 
   // Prices, fees and the total all come from the server's menu, never the browser
+  const lines = body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty), options: Array.isArray(l.options) ? l.options.map(String) : [] }));
+  const deliveryFee = delivering ? delivery.feeCents : 0;
   let q;
   try {
-    q = quote(
-      body.lines.map((l) => ({ id: String(l.id), qty: Number(l.qty), options: Array.isArray(l.options) ? l.options.map(String) : [] })),
-      menu,
-    );
+    q = quote(lines, menu, { deliveryFee });
   } catch (e) {
     // Option problems explain themselves ("…demasiadas opciones en toppings")
     const msg = e instanceof Error && !e.message.startsWith("Unknown") && !e.message.startsWith("Bad") ? e.message : "";
     return bad(msg || "Algo en tu orden cambió. Revisa tu orden e intenta otra vez.");
   }
 
+  if (delivering && q.subtotal < delivery.minCents) return bad(`El mínimo para entrega es $${(delivery.minCents / 100).toFixed(2)} en comida y bebidas.`);
+
   const account = await connectedAccountId();
   if (!account) return bad("Los pedidos en línea todavía no están activos.", 503);
+
+  // A free drink: enough points, a drink in the order, and the emailed code (used up here)
+  let rewardId: string | null = null;
+  if (body.rewardCode) {
+    if (freeDrinkCents(q.lines) === 0) return bad("Agrega una bebida para usar tu bebida gratis.");
+    if ((await pointsFor(phone)).points < POINTS_FOR_DRINK) return bad(`Necesitas ${POINTS_FOR_DRINK} puntos para una bebida gratis.`);
+    const used = await checkRewardCode(phone, String(body.rewardCode), true);
+    if ("error" in used) return bad(used.error);
+    rewardId = used.id;
+    q = quote(lines, menu, { deliveryFee, discount: freeDrinkCents });
+  }
 
   const { data: order, error } = await supabaseAdmin
     .from("orders")
     .insert({
       customer_name: name,
       customer_phone: phone,
+      customer_email: email,
       notes,
+      fulfillment_type: delivering ? "delivery" : "pickup",
+      delivery_address: address,
+      delivery_fee_cents: q.deliveryFee,
+      discount_cents: q.discount,
+      points_redeemed: rewardId ? POINTS_FOR_DRINK : 0,
       location: spot.name,
       pickup_day: day,
       pickup_time: body.time,
@@ -77,7 +119,11 @@ export async function POST(req: NextRequest) {
     })
     .select("id")
     .single();
-  if (error || !order) return bad("No pudimos guardar tu orden. Intenta otra vez.", 500);
+  if (error || !order) {
+    console.error("[checkout] order insert failed", error?.message);
+    return bad("No pudimos guardar tu orden. Intenta otra vez.", 500);
+  }
+  if (rewardId) await linkRewardCode(rewardId, order.id);
 
   const { error: itemsError } = await supabaseAdmin.from("order_items").insert(
     q.lines.map(({ item, qty, unit, picked }) => ({
@@ -93,6 +139,11 @@ export async function POST(req: NextRequest) {
 
   const origin = new URL(req.url).origin;
   const fee = (name: string, cents: number) => ({ quantity: 1, price_data: { currency: "usd", unit_amount: cents, product_data: { name } } });
+
+  // Stripe has no negative lines, so the free drink is a one-time coupon on R&X's account
+  const coupon = q.discount
+    ? await stripe.coupons.create({ amount_off: q.discount, currency: "usd", duration: "once", max_redemptions: 1, name: `Bebida gratis (${POINTS_FOR_DRINK} puntos)` }, { stripeAccount: account })
+    : null;
 
   // Direct charge on R&X's account: Stripe takes its fee there (covered by the
   // card fee line) and sends the $1/item platform fee to us.
@@ -110,12 +161,15 @@ export async function POST(req: NextRequest) {
           quantity: qty,
           price_data: { currency: "usd", unit_amount: unit, product_data: { name: item.name, description: pickedSummary(picked) || item.desc || undefined } },
         })),
+        ...(q.deliveryFee ? [fee("Entrega a domicilio", q.deliveryFee)] : []),
         fee(`Tarifa de servicio ($1 × ${q.items})`, q.platformFee),
         fee("Procesamiento de tarjeta", q.cardFee),
       ],
+      ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
+      customer_email: email,
       payment_intent_data: {
         application_fee_amount: q.platformFee,
-        description: `Pedido R&X · ${spot.name} · ${day} ${body.time}`,
+        description: `Pedido R&X · ${delivering ? `Entrega · ${address}` : spot.name} · ${day} ${body.time}`,
         metadata: { orderId: order.id },
       },
       metadata: { orderId: order.id },

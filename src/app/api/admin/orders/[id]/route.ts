@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { sendOrderReady } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 
@@ -60,5 +61,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext<"/api/adm
     .eq("id", id)
     .eq("fulfillment_status", from);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // "Ready" (or "on its way" for delivery) emails the customer, once per order
+  if (status === "ready") after(() => sendOrderReady(id).catch((e) => console.error("[email] ready failed", e)));
   return NextResponse.json({ ok: true });
 }
