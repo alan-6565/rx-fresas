@@ -96,6 +96,9 @@ export const gallery = [
 ];
 
 /** True for the fresas con crema cups, which order through the builder */
+/** What a menu item shows when it has no photo yet (the logo) */
+export const NO_PHOTO = "/images/logo-v2.png";
+
 export const isFresa = (item: { category: string; options?: unknown[] }) => item.category === "fresas" && !!item.options?.length;
 
 export const money = (n: number) => `$${n.toFixed(2)}`;

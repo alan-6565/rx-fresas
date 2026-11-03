@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Item } from "@/lib/data";
-import { isFresa, money } from "@/lib/data";
+import { isFresa, money, NO_PHOTO } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
@@ -190,7 +190,10 @@ function ItemCard({ item, i, fav, onFav }: { item: Item; i: number; fav: boolean
 }
 
 /** All the fresas styles in one card; the photo cycles through them */
-function FresasCard({ cups, fav, onFav }: { cups: Item[]; fav: boolean; onFav: () => void }) {
+function FresasCard({ cups: all, fav, onFav }: { cups: Item[]; fav: boolean; onFav: () => void }) {
+  // Only styles with a real photo take a turn in the picture
+  const withPhoto = all.filter((c) => c.image !== NO_PHOTO);
+  const cups = withPhoto.length ? withPhoto : all;
   const [shown, setShown] = useState(0);
   const [open, setOpen] = useState(false);
 
@@ -200,8 +203,9 @@ function FresasCard({ cups, fav, onFav }: { cups: Item[]; fav: boolean; onFav: (
     return () => clearInterval(t);
   }, [cups.length]);
 
-  const from = Math.min(...cups.map((c) => c.price));
+  const from = Math.min(...all.map((c) => c.price));
   const styles = cups.map((c) => c.name.replace(/^Fresas con Crema /, ""));
+  const allStyles = all.map((c) => c.name.replace(/^Fresas con Crema /, ""));
 
   return (
     <article className={cardClass}>
@@ -227,7 +231,7 @@ function FresasCard({ cups, fav, onFav }: { cups: Item[]; fav: boolean; onFav: (
           Desde <span className="text-rose">{money(from)}</span>
         </span>
         <p className="mt-2 text-sm text-ink-soft">
-          {cups.length} estilos: {styles.join(", ")}. Elige el tuyo, tu tamaño y tus toppings.
+          {all.length} estilos: {allStyles.join(", ")}. Elige el tuyo, tu tamaño y tus toppings.
         </p>
         <div className="mt-2 flex gap-1.5" aria-hidden>
           {cups.map((c, i) => (

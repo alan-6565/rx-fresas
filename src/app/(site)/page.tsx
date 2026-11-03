@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { business, money } from "@/lib/data";
+import { business, money, NO_PHOTO } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getMenu } from "@/lib/catalog";
@@ -47,13 +47,13 @@ const features = [
 
 export default async function Home() {
   const [{ categories, items }, photos, promotions] = await Promise.all([getMenu(), getSitePhotos(), getPromotions()]);
-  // Cafés up front (or whatever's first on the menu), and the seasonal section only while it has drinks
+  // Four drinks with real photos, cafés first, then whatever else is on the menu
   // (one card per photo, so two sizes of the same cup don't show twice)
-  const cafes = (
-    items.some((i) => i.category === "cafes")
-      ? items.filter((i) => i.category === "cafes")
-      : items
-  )
+  const cafes = [
+    ...items.filter((i) => i.category === "cafes"),
+    ...items.filter((i) => i.category !== "cafes"),
+  ]
+    .filter((item) => item.image !== NO_PHOTO)
     .filter(
       (item, i, list) => list.findIndex((x) => x.image === item.image) === i,
     )

@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { categories as starterCategories, items as starterItems, locations as starterLocations, type Item } from "@/lib/data";
+import { categories as starterCategories, items as starterItems, locations as starterLocations, NO_PHOTO, type Item } from "@/lib/data";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Spot, WeekHours } from "@/lib/schedule";
 import type { OptionGroup } from "@/lib/options";
@@ -38,7 +38,7 @@ export type LocationRow = {
   sort: number;
 };
 
-export const FALLBACK_IMAGE = "/images/logo-v2.png";
+export const FALLBACK_IMAGE = NO_PHOTO;
 
 const configured = () => !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
