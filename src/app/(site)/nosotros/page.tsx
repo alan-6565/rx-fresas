@@ -19,7 +19,8 @@ export default async function AboutPage() {
         <div>
           <Heading as="h1">Nuestra Historia</Heading>
           <div className="mt-6 space-y-4 text-lg leading-relaxed text-ink-soft max-w-xl">
-            <p>R&amp;X nació con la idea de compartir algo simple pero especial: buenos cafés, fresas con crema y antojos que alegran el día.</p>
+            {/* In the owners' own words, from their questionnaire */}
+            <p>Te ofrecemos postres 🍨 ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas.</p>
             <p>
               Somos un negocio local que aprecia y agradece a toda nuestra comunidad por su apoyo. Cada bebida y antojo lo preparamos con cariño para que disfrutes
               un momento dulce en tu día. <span className="text-rose">♥</span>

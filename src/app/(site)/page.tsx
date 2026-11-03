@@ -225,10 +225,9 @@ export default async function Home() {
         <div>
           <Heading>Nuestra Historia</Heading>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft max-w-xl">
-            R&amp;X nació con la idea de compartir algo simple pero especial:
-            buenos cafés, fresas con crema y antojos que alegran el día. Somos
-            un negocio local que aprecia y agradece a toda nuestra comunidad por
-            su apoyo.
+            {/* In the owners' own words, from their questionnaire */}
+            Te ofrecemos postres 🍨 ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas. Somos un negocio local que aprecia y agradece a toda
+            nuestra comunidad por su apoyo.
           </p>
           <Button href="/nosotros" className="mt-8">
             Conoce más
