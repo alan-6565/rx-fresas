@@ -31,7 +31,7 @@ export default async function AboutPage() {
           </Button>
         </div>
         <div className="relative">
-          <Photo slot="about.story" src={photos.photo("about.story")} alt="El food truck de R&X Fresas con Crema" className="aspect-[4/3] rounded-[2rem] shadow-xl" priority />
+          <Photo slot="about.story" src={photos.photo("about.story")} alt="Cafés de R&X Fresas con Crema" className="aspect-[4/3] rounded-[2rem] shadow-xl" priority />
           <div className="absolute -bottom-8 right-4 sm:-right-6 rounded-2xl bg-white px-6 py-4 shadow-lg">
             <LoveNote className="text-2xl" />
           </div>
@@ -51,8 +51,8 @@ export default async function AboutPage() {
       </section>
 
       <section className="mt-12 grid grid-cols-3 gap-3 sm:gap-6">
-        <Photo slot="about.1" src={photos.photo("about.1")} alt="Preparando fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
-        <Photo slot="about.2" src={photos.photo("about.2")} alt="Vaso de fresas con crema" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
+        <Photo slot="about.1" src={photos.photo("about.1")} alt="Fresas con crema con granola" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
+        <Photo slot="about.2" src={photos.photo("about.2")} alt="Café helado de R&X" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
         <Photo slot="about.3" src={photos.photo("about.3")} alt="Mini pancakes con fresa y plátano" className="aspect-[4/5] rounded-3xl" sizes="33vw" />
       </section>
     </PageTop>

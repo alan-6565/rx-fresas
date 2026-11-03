@@ -237,7 +237,7 @@ export default async function Home() {
           <Photo
             slot="home.story"
             src={photos.photo("home.story")}
-            alt="El food truck de R&X"
+            alt="Fresas con crema de R&X"
             className="aspect-[4/3] rounded-[2rem] shadow-xl"
           />
           <div className="absolute -bottom-8 -left-4 sm:-left-10 rounded-2xl bg-blush px-6 py-4 shadow-lg">
