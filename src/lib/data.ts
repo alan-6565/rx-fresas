@@ -83,17 +83,9 @@ export const toppings = [
   },
 ];
 
-export const gallery = [
-  "/images/gal-prep.jpg",
-  "/images/f-especial.jpg",
-  "/images/gal-pancakes.jpg",
-  "/images/historia.jpg",
-  "/images/d-cookies.jpg",
-  "/images/o-malvavisco.jpg",
-  "/images/gal-cup.jpg",
-  "/images/p-15.jpg",
-  "/images/truck-portal.jpg",
-];
+// The gallery is R&X's own photos, saved in the settings table; the old
+// placeholder pictures are gone
+export const gallery: string[] = [];
 
 /** True for the fresas con crema cups, which order through the builder */
 /** What a menu item shows when it has no photo yet (the logo) */
