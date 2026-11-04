@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getSitePhotos } from "@/lib/site-photos";
 import { Button, Photo } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
+import { Wave } from "@/components/Wave";
 import { BagIcon, HeartDoodle, LeafIcon, PeopleIcon, PinIcon, StrawberryIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Sobre Nosotros — R&X Fresas con Crema" };
@@ -13,19 +14,6 @@ const values = [
   { icon: PeopleIcon, title: "Apoyando lo Local", text: "Gracias por ser parte de nuestra historia." },
   { icon: LeafIcon, title: "Postres y Cafés Únicos", text: "Recetas creativas que nos hacen especiales." },
 ];
-
-// One stretch of wave, drawn twice side by side so it can roll forever
-const wave = (top: number, dip: number) =>
-  `M0 ${top} C240 ${top - dip} 480 ${top - dip} 720 ${top} C960 ${top + dip} 1200 ${top + dip} 1440 ${top} ` +
-  `C1680 ${top - dip} 1920 ${top - dip} 2160 ${top} C2400 ${top + dip} 2640 ${top + dip} 2880 ${top} V160 H0 Z`;
-
-function Wave({ fill, top, dip, className }: { fill: string; top: number; dip: number; className: string }) {
-  return (
-    <svg viewBox="0 0 2880 160" preserveAspectRatio="none" className={`absolute inset-y-0 left-0 w-[200%] h-full ${className}`} aria-hidden>
-      <path d={wave(top, dip)} fill={fill} />
-    </svg>
-  );
-}
 
 export default async function AboutPage() {
   const photos = await getSitePhotos();

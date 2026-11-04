@@ -274,3 +274,27 @@ export function stopDayLabel(offset: number, now = new Date()) {
   if (offset === 1) return `Mañana, ${text}`;
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/**
+ * Every stop from now on in time order (the one open now first), for the
+ * "Parada Actual" card and the "Próximas Paradas" list. When a stop closes it
+ * drops off, so the next one moves up on its own.
+ */
+export function stopsInOrder(spots: Spot[], now = new Date(), limit = 4): Stop[] {
+  const clock = pacificClock(now);
+  const all: Stop[] = [];
+  for (let offset = 0; offset < 8 && all.length < limit; offset++) {
+    const date = pacificDate(offset, now);
+    const day: Stop[] = [];
+    for (const spot of spots) {
+      const d = spot.hours[(clock.weekday + offset) % 7];
+      if (!d?.open || spot.closedOn === date) continue;
+      const start = toMinutes(d.start);
+      const end = toMinutes(d.end);
+      if (offset === 0 && end <= clock.minutes) continue;
+      day.push({ spot, offset, start, end, openNow: offset === 0 && start <= clock.minutes });
+    }
+    all.push(...day.sort((a, b) => a.start - b.start));
+  }
+  return all.slice(0, limit);
+}
