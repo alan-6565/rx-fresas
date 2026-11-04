@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Caveat_Brush, DM_Sans, Kaushan_Script } from "next/font/google";
+import { Caveat_Brush, DM_Sans, Kaushan_Script, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const caveatBrush = Caveat_Brush({
@@ -12,6 +12,13 @@ const kaushan = Kaushan_Script({
   variable: "--font-script",
   subsets: ["latin"],
   weight: "400",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  style: ["normal", "italic"],
 });
 
 const dmSans = DM_Sans({
@@ -27,7 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${caveatBrush.variable} ${kaushan.variable} ${dmSans.variable} h-full antialiased`}>
+    <html lang="es" className={`${caveatBrush.variable} ${kaushan.variable} ${dmSans.variable} ${playfair.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-cream text-ink font-ui">
         {children}
       </body>

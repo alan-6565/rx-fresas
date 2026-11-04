@@ -16,6 +16,7 @@ export const DEFAULT_PHOTOS = {
   "about.1": "/images/gal-prep.jpg",
   "about.2": "/images/gal-cup.jpg",
   "about.3": "/images/gal-pancakes.jpg",
+  "about.mission": "/images/hero.jpg",
 } as const;
 export type PhotoSlot = keyof typeof DEFAULT_PHOTOS;
 

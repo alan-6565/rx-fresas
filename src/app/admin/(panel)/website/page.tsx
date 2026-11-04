@@ -24,6 +24,7 @@ const SLOT_LABELS: Record<string, string> = {
   "about.1": "Sobre Nosotros · photo 1 of 3",
   "about.2": "Sobre Nosotros · photo 2 of 3",
   "about.3": "Sobre Nosotros · photo 3 of 3",
+  "about.mission": "Sobre Nosotros · “Nuestra Misión” photo",
 };
 const RESETTABLE = new Set(Object.keys(SLOT_LABELS));
 

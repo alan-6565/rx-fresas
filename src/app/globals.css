@@ -31,6 +31,7 @@
   --font-hand: var(--font-hand);
   --font-script: var(--font-script);
   --font-ui: var(--font-ui);
+  --font-serif: var(--font-serif);
 }
 
 body {
@@ -148,7 +149,30 @@ body {
     transform: scale(1.12) translateX(1%);
   }
 }
+/* Sobre Nosotros: the pink waves roll slowly sideways */
+.rx-wave {
+  animation: rx-wave 16s linear infinite;
+}
+.rx-wave-slow {
+  animation: rx-wave 26s linear infinite reverse;
+}
+@keyframes rx-wave {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.rx-bob {
+  animation: rx-bob 7s ease-in-out infinite;
+}
+@keyframes rx-bob {
+  50% {
+    transform: translateY(-8px);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  .rx-wave,
+  .rx-wave-slow,
+  .rx-bob,
   .rx-pop,
   .rx-hero-in,
   .rx-drift,
