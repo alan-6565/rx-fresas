@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Wave } from "@/components/Wave";
 import { CalendarIcon, PinIcon } from "@/components/icons";
 
-// The Ubicaciones banner: R&X's strawberry splash art drifting slowly, with
+// The Ubicaciones banner: R&X's strawberry splash art, shown whole (no zoom), with
 // cream droplets floating over the splash. While scrolling, the art sinks a
 // little slower than the page and fades. The tabs under it jump to each part
 // of the page and light up for the part on screen.
@@ -49,7 +49,7 @@ export function LocationsHero() {
       frame = requestAnimationFrame(() => {
         const y = Math.min(window.scrollY, 700);
         if (art.current) {
-          art.current.style.transform = `translate3d(0, ${y * 0.35}px, 0) scale(${1 + y / 4000})`;
+          art.current.style.transform = `translate3d(0, ${y * 0.3}px, 0)`;
           art.current.style.opacity = String(1 - y / 1100);
         }
       });
@@ -80,9 +80,9 @@ export function LocationsHero() {
     <>
       <section className="relative -mt-24 sm:-mt-28 pt-20 sm:pt-24 lg:pt-0 bg-night overflow-hidden">
         <h1 className="sr-only">Nuestras Ubicaciones</h1>
-        <div className="relative h-[240px] sm:h-[320px] lg:h-auto lg:aspect-[3/1] lg:max-h-[600px]">
+        <div className="relative h-[240px] sm:h-[320px] lg:h-auto lg:w-full lg:aspect-[3/1]">
           <div ref={art} className="absolute inset-0 will-change-transform">
-            <div className="absolute inset-0 rx-drift">
+            <div className="absolute inset-0 rx-fade">
               <Image
                 src="/images/ubicaciones-banner.webp"
                 alt="Nuestras Ubicaciones: fresas con crema de R&X entre un chorro de crema"
