@@ -12,6 +12,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export const DEFAULT_PHOTOS = {
   "home.hero": "/images/hero.jpg",
   "home.story": "/images/historia.jpg",
+  "about.hero": "/images/about-hero.webp",
   "about.story": "/images/historia.jpg",
   "about.1": "/images/gal-prep.jpg",
   "about.2": "/images/gal-cup.jpg",

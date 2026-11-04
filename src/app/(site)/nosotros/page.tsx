@@ -27,35 +27,27 @@ function Wave({ fill, top, dip, className }: { fill: string; top: number; dip: n
   );
 }
 
-function Sparks({ className }: { className: string }) {
-  return (
-    <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className={className} aria-hidden>
-      <path d="M6 14 20 18M8 26l13-3M12 36l10-8" />
-    </svg>
-  );
-}
-
 export default async function AboutPage() {
   const photos = await getSitePhotos();
   return (
     <div className="overflow-x-clip -mb-20">
       {/* Dark story banner, tucked under the navbar */}
       <section className="relative -mt-24 sm:-mt-28 bg-night text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_30%,rgba(120,60,40,.35),transparent_40%),radial-gradient(circle_at_45%_10%,rgba(232,80,106,.12),transparent_35%)]" aria-hidden />
-
-        {/* Their photo on the right, melting into the dark */}
-        <div className="relative lg:absolute lg:inset-y-0 lg:right-0 lg:w-[56%] h-[420px] sm:h-[520px] lg:h-auto">
-          <Photo slot="about.story" src={photos.photo("about.story")} alt="Cafés de R&X Fresas con Crema" className="absolute inset-0" sizes="(min-width: 1024px) 56vw, 100vw" priority />
-          <div className="absolute inset-0 bg-gradient-to-t from-night via-transparent via-40% to-transparent lg:bg-[linear-gradient(to_right,var(--night)_4%,rgba(31,20,22,.7)_20%,transparent_50%),linear-gradient(to_top,var(--night),transparent_30%)]" />
+        {/* Their banner photo: cups on the right, dark on the left for the words */}
+        <div className="relative lg:absolute lg:top-0 lg:right-0 lg:w-[66%] xl:w-[80%] h-[380px] sm:h-[480px] lg:h-auto lg:aspect-[2/1]">
+          <Photo
+            slot="about.hero"
+            src={photos.photo("about.hero")}
+            alt="Cafés helados de R&X Fresas con Crema"
+            className="absolute inset-0"
+            fit="object-cover object-[78%_50%] lg:object-center"
+            sizes="(min-width: 1024px) 80vw, 100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-night via-transparent via-35% to-transparent lg:bg-[linear-gradient(to_right,var(--night),transparent_25%),linear-gradient(to_top,var(--night),transparent_30%)]" />
         </div>
-        <div className="pointer-events-none hidden lg:block absolute inset-y-0 right-0 w-[56%]" aria-hidden>
-          <HeartDoodle className="absolute left-[2%] top-[48%] w-14 h-14 text-rose-soft -rotate-12 rx-float" />
-          <HeartDoodle className="absolute right-[6%] top-[22%] w-16 h-16 text-rose-soft rotate-12 rx-float [animation-delay:-3s]" />
-          <Sparks className="absolute right-[1%] top-[34%] w-10 h-10 text-rose-soft -scale-x-100" />
-          <Sparks className="absolute left-[12%] top-[74%] w-10 h-10 text-rose-soft" />
-        </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-8 -mt-28 lg:mt-0 lg:pt-44 pb-10">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-8 -mt-16 lg:mt-0 lg:pt-44 pb-10">
           <div className="max-w-xl rx-hero-in">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-rose-soft/80 px-4 py-1.5 text-rose-soft font-semibold">
               <HeartDoodle className="w-5 h-5" /> Sobre Nosotros

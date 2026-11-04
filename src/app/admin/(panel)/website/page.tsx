@@ -20,7 +20,7 @@ const PAGES = [
 const SLOT_LABELS: Record<string, string> = {
   "home.hero": "Home · big photo at the top",
   "home.story": "Home · “Nuestra Historia” photo",
-  "about.story": "Sobre Nosotros · main photo",
+  "about.hero": "Sobre Nosotros · big photo at the top",
   "about.1": "Sobre Nosotros · photo 1 of 3",
   "about.2": "Sobre Nosotros · photo 2 of 3",
   "about.3": "Sobre Nosotros · photo 3 of 3",
