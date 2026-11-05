@@ -12,8 +12,8 @@ export type BusinessInfo = {
 };
 
 export const DEFAULT_INFO: BusinessInfo = {
-  instagram: "rx_fresasconcrema",
-  tiktok: "rx_fresasconcrema",
+  instagram: "ryxfresas",
+  tiktok: "fresasconcremacoffe",
   facebook: "",
   phone: "",
   email: "",
@@ -63,8 +63,8 @@ export function checkInfo(raw: Partial<Record<keyof BusinessInfo, unknown>>): { 
     if (given && !value) problems[key] = msg;
     info[key] = value;
   };
-  field("instagram", cleanHandle, "Escribe el usuario de Instagram, por ejemplo @rx_fresasconcrema.");
-  field("tiktok", cleanHandle, "Escribe el usuario de TikTok, por ejemplo @rx_fresasconcrema.");
+  field("instagram", cleanHandle, "Escribe el usuario de Instagram, por ejemplo @ryxfresas.");
+  field("tiktok", cleanHandle, "Escribe el usuario de TikTok, por ejemplo @fresasconcremacoffe.");
   field("facebook", cleanFacebook, "Pega el link de su página de Facebook.");
   field("phone", cleanPhone, "El teléfono debe tener 10 números.");
   field("email", cleanEmail, "Ese correo no se ve bien.");

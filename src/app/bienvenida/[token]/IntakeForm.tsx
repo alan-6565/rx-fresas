@@ -135,7 +135,7 @@ export function IntakeForm({ token, initial, spots, menu }: { token: string; ini
         <Section icon={<MailIcon />} title="Contacto y Redes Sociales" sub="Información principal y redes que se mostrarán en su sitio web.">
           <div className="divide-y divide-line/70">
             <Row icon={<InstagramIcon className="w-5 h-5 text-[#d6249f]" />} label="Instagram" error={problems.instagram}>
-              <input aria-label="Instagram" value={a.contact.instagram} onChange={(e) => setContact({ instagram: e.target.value })} placeholder="@rx_fresasconcrema" className={input} />
+              <input aria-label="Instagram" value={a.contact.instagram} onChange={(e) => setContact({ instagram: e.target.value })} placeholder="@ryxfresas" className={input} />
             </Row>
             <Row icon={<TikTokIcon className="w-5 h-5" />} label="TikTok" error={problems.tiktok}>
               <input aria-label="TikTok" value={a.contact.tiktok} onChange={(e) => setContact({ tiktok: e.target.value })} placeholder="@usuario (si tienen)" className={input} />

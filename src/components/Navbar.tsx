@@ -38,7 +38,7 @@ export function Socials({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-/** "@rx_fresasconcrema", for server pages that show the handle */
+/** "@ryxfresas", for server pages that show the handle */
 export function Handle() {
   return <>{useBusiness().handle}</>;
 }

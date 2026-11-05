@@ -339,8 +339,8 @@ function ContactEditor({ info }: { info: BusinessInfo }) {
       <h2 className="text-lg font-bold">Contact & socials</h2>
       <p className="mt-1 text-sm text-ink-soft">Shown in the navbar, footer and Contacto page. Empty ones are hidden.</p>
       <div className="mt-4 space-y-4">
-        {text("instagram", "Instagram", "rx_fresasconcrema", "Just the handle, or paste their profile link")}
-        {text("tiktok", "TikTok", "rx_fresasconcrema")}
+        {text("instagram", "Instagram", "ryxfresas", "Just the handle, or paste their profile link")}
+        {text("tiktok", "TikTok", "fresasconcremacoffe")}
         {text("facebook", "Facebook page", "https://www.facebook.com/…")}
         {text("phone", "Phone", "(510) 555-1234")}
         <label className="flex items-center gap-3 text-sm">
