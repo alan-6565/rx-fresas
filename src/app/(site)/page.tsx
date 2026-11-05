@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { business, money, NO_PHOTO } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
@@ -194,28 +195,35 @@ export default async function Home() {
                 Pídelas ya
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-4 sm:gap-6">
-              {otono.map((item) => (
-                <article
-                  key={item.id}
-                  className="relative rounded-3xl overflow-hidden aspect-square shadow-xl"
-                >
-                  <Photo
-                    slot={`item:${item.id}`}
-                    src={item.image}
-                    alt={item.name}
-                    className="absolute inset-0"
-                    sizes="(min-width:1024px) 28vw, 50vw"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-4 sm:p-5 pt-16">
-                    <h3 className="font-hand text-3xl sm:text-4xl leading-none">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-cream/80">{item.desc}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            {/* Their own flyer until the seasonal drinks have photos */}
+            {otono.some((item) => item.image === NO_PHOTO) ? (
+              <div className="relative mx-auto w-full max-w-md aspect-[912/1168] rounded-3xl overflow-hidden shadow-xl">
+                <Image src="/images/menu-noviembre.webp" alt={`${otonoTitle}: ${otono.map((i) => i.name).join(", ")}`} fill sizes="(min-width:1024px) 28rem, 90vw" className="object-cover" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                {otono.map((item) => (
+                  <article
+                    key={item.id}
+                    className="relative rounded-3xl overflow-hidden aspect-square shadow-xl"
+                  >
+                    <Photo
+                      slot={`item:${item.id}`}
+                      src={item.image}
+                      alt={item.name}
+                      className="absolute inset-0"
+                      sizes="(min-width:1024px) 28vw, 50vw"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-4 sm:p-5 pt-16">
+                      <h3 className="font-hand text-3xl sm:text-4xl leading-none">
+                        {item.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-cream/80">{item.desc}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
