@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The builder now opens from the menu when someone orders fresas con crema
+// Old "Crea tu antojo" links: each fresas style is ordered from its own card now
 export default function CreaTuAntojoPage() {
-  redirect("/menu?crear=1#fresas");
+  redirect("/menu#fresas");
 }

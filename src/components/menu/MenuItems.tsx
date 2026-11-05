@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Item } from "@/lib/data";
-import { isFresa, money, NO_PHOTO } from "@/lib/data";
+import { money } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
-import { BuilderSheet } from "@/components/antojo/BuilderSheet";
 
-// The whole menu on one scroll, one section per category. The fresas styles
-// share a single card whose "Personalizar" opens the builder box. "Buscar en
-// el menú…" searches everything; hearts are remembered on this device only.
+// The whole menu on one scroll, one section per category. Every item,
+// fresas included, has its own card and "+ Agregar" (size, toppings… in the
+// options sheet). "Buscar en el menú…" searches everything; hearts are
+// remembered on this device only.
 
 export type MenuSection = { id: string; label: string; title: string; badge?: string; items: Item[] };
 
@@ -115,8 +115,6 @@ export function MenuItems({ sections }: { sections: MenuSection[] }) {
         </section>
       ) : (
         sections.map((s) => {
-          const cups = s.items.filter(isFresa);
-          const rest = s.items.filter((i) => !isFresa(i));
           return (
             <section key={s.id} id={s.id} className="scroll-mt-40 pt-12">
               <h2 className="flex items-center gap-3 font-hand text-5xl text-ink sm:text-6xl">
@@ -127,7 +125,7 @@ export function MenuItems({ sections }: { sections: MenuSection[] }) {
                 <p className="mt-6 text-lg text-ink-soft">
                   {s.id === "extras" ? (
                     <>
-                      Los toppings y extras se eligen al personalizar tu orden.{" "}
+                      Los toppings y extras se eligen al agregar tu orden.{" "}
                       <Link href="#toppings" className="font-semibold text-rose underline">
                         Ver toppings
                       </Link>
@@ -138,8 +136,7 @@ export function MenuItems({ sections }: { sections: MenuSection[] }) {
                 </p>
               ) : (
                 <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {cups.length > 0 && <FresasCard cups={cups} fav={favs.includes("fresas")} onFav={() => toggleFav("fresas")} />}
-                  {rest.map((item, i) => card(item, i + (cups.length ? 1 : 0)))}
+                  {s.items.map((item, i) => card(item, i))}
                 </div>
               )}
             </section>
@@ -185,67 +182,6 @@ function ItemCard({ item, i, fav, onFav }: { item: Item; i: number; fav: boolean
         <p className="mt-2 line-clamp-3 text-sm text-ink-soft">{item.desc}</p>
         <AddButton id={item.id} variant="outline" className="mt-auto self-start" />
       </div>
-    </article>
-  );
-}
-
-/** All the fresas styles in one card; the photo cycles through them */
-function FresasCard({ cups: all, fav, onFav }: { cups: Item[]; fav: boolean; onFav: () => void }) {
-  // Only styles with a real photo take a turn in the picture
-  const withPhoto = all.filter((c) => c.image !== NO_PHOTO);
-  const cups = withPhoto.length ? withPhoto : all;
-  const [shown, setShown] = useState(0);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (cups.length < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = setInterval(() => setShown((n) => (n + 1) % cups.length), 2600);
-    return () => clearInterval(t);
-  }, [cups.length]);
-
-  const from = Math.min(...all.map((c) => c.price));
-  const styles = cups.map((c) => c.name.replace(/^Fresas con Crema /, ""));
-  const allStyles = all.map((c) => c.name.replace(/^Fresas con Crema /, ""));
-
-  return (
-    <article className={cardClass}>
-      <div className="relative aspect-[4/5] w-32 shrink-0 overflow-hidden rounded-2xl sm:w-40">
-        {cups.map((c, i) => (
-          <Photo
-            key={c.id}
-            slot={`item:${c.id}`}
-            src={c.image}
-            alt={i === shown ? c.name : ""}
-            className={`absolute inset-0 transition-opacity duration-700 ${i === shown ? "opacity-100" : "opacity-0"}`}
-            sizes="160px"
-          />
-        ))}
-        <span className="absolute inset-x-2 bottom-2 truncate rounded-full bg-white/90 px-2 py-0.5 text-center text-xs font-bold text-rose">{styles[shown]}</span>
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col py-1 pr-1">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-lg font-bold leading-tight">Fresas con Crema</h3>
-          <Heart on={fav} name="Fresas con Crema" onClick={onFav} />
-        </div>
-        <span className="mt-2 self-start rounded-full bg-blush px-3 py-1 font-bold">
-          Desde <span className="text-rose">{money(from)}</span>
-        </span>
-        <p className="mt-2 text-sm text-ink-soft">
-          {all.length} estilos: {allStyles.join(", ")}. Elige el tuyo, tu tamaño y tus toppings.
-        </p>
-        <div className="mt-2 flex gap-1.5" aria-hidden>
-          {cups.map((c, i) => (
-            <span key={c.id} className={`h-1.5 rounded-full transition-all ${i === shown ? "w-5 bg-rose" : "w-1.5 bg-rose/30"}`} />
-          ))}
-        </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-auto self-start rounded-full border-2 border-rose/70 bg-white px-5 py-2 text-base font-semibold text-rose transition-colors hover:border-rose hover:bg-rose hover:text-white"
-        >
-          + Personalizar
-        </button>
-      </div>
-      {open && <BuilderSheet initialId={cups[shown]?.id} onClose={() => setOpen(false)} />}
     </article>
   );
 }

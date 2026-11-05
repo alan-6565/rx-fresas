@@ -3,7 +3,6 @@ import { toppings } from "@/lib/data";
 import { getMenu } from "@/lib/catalog";
 import { MenuHero } from "@/components/menu/MenuHero";
 import { MenuItems } from "@/components/menu/MenuItems";
-import { BuilderOnLoad } from "@/components/antojo/BuilderSheet";
 
 export const metadata: Metadata = { title: "Menú — R&X Fresas con Crema" };
 
@@ -33,8 +32,8 @@ function Toppings() {
   );
 }
 
-export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
-  const [{ crear }, menu] = await Promise.all([searchParams, getMenu()]);
+export default async function MenuPage() {
+  const menu = await getMenu();
   // Empty categories stay off the menu, except Extras, which explains the toppings
   const categories = menu.categories.filter((c) => c.id === "extras" || menu.items.some((i) => i.category === c.id));
   const sections = categories.map((c) => ({ id: c.id, label: c.label, title: c.title, badge: BADGES[c.id], items: menu.items.filter((i) => i.category === c.id) }));
@@ -47,7 +46,6 @@ export default async function MenuPage({ searchParams }: PageProps<"/menu">) {
 
         <Toppings />
       </div>
-      {crear === "1" && <BuilderOnLoad />}
     </>
   );
 }
