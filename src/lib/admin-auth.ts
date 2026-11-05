@@ -9,7 +9,11 @@ export const ADMIN_COOKIE = "rx_admin";
 
 export type AdminRole = "owner" | "staff";
 
-/** Sections (and their API routes) only the site manager sees */
+/**
+ * Sections (and their API routes) turned off in the dashboard for every login.
+ * The site manager changes locations, promotions and website photos in code
+ * or straight in the database instead. The pages are kept, just unreachable.
+ */
 export const OWNER_ONLY = ["/admin/locations", "/admin/website", "/admin/promotions", "/api/admin/locations", "/api/admin/promotions", "/api/admin/photos"];
 export const ownerOnly = (pathname: string) => OWNER_ONLY.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 

@@ -15,7 +15,7 @@ function Logo() {
   );
 }
 
-export default function Sidebar({ owner }: { owner: boolean }) {
+export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -43,13 +43,6 @@ export default function Sidebar({ owner }: { owner: boolean }) {
   const nav = (
     <nav className="mt-6 flex flex-col gap-1">
       {adminNav.filter((n) => !n.ownerOnly).map(link)}
-      {/* Locations, Edit Website and Promotions: run by the site manager, hidden from R&X's staff login */}
-      {owner && (
-        <>
-          <p className="mt-4 px-4 pb-1 text-[11px] font-bold uppercase tracking-wider text-ink-soft">Only you see these</p>
-          {adminNav.filter((n) => n.ownerOnly).map(link)}
-        </>
-      )}
       <button onClick={logout} className="mt-4 flex items-center gap-3 rounded-xl px-4 py-2.5 text-[15px] font-medium text-ink-soft hover:bg-blush">
         <LogoutIcon className="w-5 h-5" />
         Log out

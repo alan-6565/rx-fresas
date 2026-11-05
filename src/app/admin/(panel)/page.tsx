@@ -3,9 +3,8 @@ import Link from "next/link";
 import { dashboardStats } from "@/lib/admin-stats";
 import { money } from "@/lib/data";
 import { TIME_ZONE } from "@/lib/time";
-import { isOwner } from "@/lib/admin-session";
 import { Card, PageHeader } from "@/components/admin/ui";
-import { BagIcon, CalendarEditIcon, CartIcon, ClockIcon, HeartIcon, SparkleIcon, TrendIcon } from "@/components/admin/icons";
+import { BagIcon, CalendarEditIcon, CartIcon, ClockIcon, HeartIcon, TrendIcon } from "@/components/admin/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -73,12 +72,11 @@ function OrdersChart({ data }: { data: { hour: number; orders: number }[] }) {
 const ACTIONS = [
   { href: "/admin/orders", icon: CartIcon, title: "Open Orders", sub: "See and update today's orders" },
   { href: "/admin/menu", icon: CalendarEditIcon, title: "Update Menu", sub: "Add or edit items" },
-  { href: "/admin/promotions", icon: SparkleIcon, title: "Post Promotion", sub: "Share a special or event", ownerOnly: true },
-  { href: "/admin/analytics", icon: TrendIcon, title: "See Sales", sub: "How this week is going", staffOnly: true },
+  { href: "/admin/analytics", icon: TrendIcon, title: "See Sales", sub: "How this week is going" },
 ];
 
 export default async function DashboardPage() {
-  const [s, owner] = await Promise.all([dashboardStats(), isOwner()]);
+  const s = await dashboardStats();
   const date = new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date());
 
   return (
@@ -148,7 +146,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-4 grid sm:grid-cols-3 gap-4">
-        {ACTIONS.filter((a) => (owner ? !a.staffOnly : !a.ownerOnly)).map(({ href, icon: Icon, title, sub }) => (
+        {ACTIONS.map(({ href, icon: Icon, title, sub }) => (
           <Link key={href} href={href}>
             <Card className="p-4 flex items-center gap-4 hover:border-rose transition-colors">
               <span className="grid place-items-center w-12 h-12 rounded-full bg-blush text-rose">
