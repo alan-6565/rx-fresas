@@ -8,7 +8,7 @@ function setup() {
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) return false;
-  webpush.setVapidDetails("https://rx-fresas.vercel.app", pub, priv);
+  webpush.setVapidDetails("https://www.ryxfresasandcoffee.com", pub, priv);
   ready = true;
   return true;
 }

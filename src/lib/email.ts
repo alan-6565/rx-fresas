@@ -10,7 +10,7 @@ import { pointsFor } from "@/lib/rewards";
 // everything else keeps working. Each order email goes out once: the column
 // that marks it sent is claimed before sending.
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rx-fresas.vercel.app";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.ryxfresasandcoffee.com";
 const ROSE = "#e8506a";
 
 let transport: Transporter | null | undefined;

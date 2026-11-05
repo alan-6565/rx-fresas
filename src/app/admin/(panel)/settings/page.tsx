@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
   const [token, intake, info, spots, h, menu, payments, delivery, { stripe }] = await Promise.all([getIntakeToken(), getIntake(), getBusinessInfo(), getSpots(), headers(), getMenu(), paymentsStatus(), getDelivery(), searchParams]);
-  const host = h.get("host") ?? "rx-fresas.vercel.app";
+  const host = h.get("host") ?? "www.ryxfresasandcoffee.com";
   const origin = `${h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")}://${host}`;
   return (
     <>
