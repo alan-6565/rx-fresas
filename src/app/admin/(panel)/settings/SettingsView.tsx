@@ -10,12 +10,12 @@ import { Card, Field, Toggle, btn, field } from "@/components/admin/ui";
 
 const when = (iso: string) => new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
 
-export function SettingsView({ origin, token: firstToken, intake, info, names }: { origin: string; token: string; intake: Intake; info: BusinessInfo; names: Names }) {
+export function SettingsView({ owner, origin, token: firstToken, intake, info, names }: { owner: boolean; origin: string; token: string; intake: Intake; info: BusinessInfo; names: Names }) {
   return (
     <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_1fr] items-start">
       <div className="space-y-6">
         <LinkCard origin={origin} firstToken={firstToken} intake={intake} />
-        <ClientAnswers intake={intake} names={names} />
+        <ClientAnswers intake={intake} names={names} owner={owner} />
       </div>
       <ContactEditor info={info} />
     </div>
@@ -94,7 +94,7 @@ function LinkCard({ origin, firstToken, intake }: { origin: string; firstToken: 
 
 type Names = { spots: Record<string, string>; categories: Record<string, string> };
 
-function ClientAnswers({ intake, names }: { intake: Intake; names: Names }) {
+function ClientAnswers({ intake, names, owner }: { intake: Intake; names: Names; owner: boolean }) {
   const [tab, setTab] = useState<"summary" | "menu" | "hours" | "photos">("summary");
   const a = intake.answers;
   if (!intake.savedAt && !intake.photos.length) return null;
@@ -253,7 +253,7 @@ function ClientAnswers({ intake, names }: { intake: Intake; names: Names }) {
           </div>
         )}
 
-        {tab === "photos" && <OwnerPhotos photos={intake.photos} />}
+        {tab === "photos" && <OwnerPhotos photos={intake.photos} canAdd={owner} />}
 
         <p className="mt-4 text-xs text-ink-soft">ⓘ Logo and menu photos wait for you to apply them. To put any photo somewhere specific, use Edit Website.</p>
       </div>
@@ -282,7 +282,7 @@ function Line({ k, v }: { k: string; v: string }) {
   );
 }
 
-function OwnerPhotos({ photos }: { photos: Intake["photos"] }) {
+function OwnerPhotos({ photos, canAdd }: { photos: Intake["photos"]; canAdd: boolean }) {
   const [added, setAdded] = useState<Record<string, "busy" | "done" | "error">>({});
   if (!photos.length) return <p className="mt-4 text-sm text-ink-soft">No photos yet.</p>;
 
@@ -308,7 +308,7 @@ function OwnerPhotos({ photos }: { photos: Intake["photos"] }) {
                   <a href={p.url} target="_blank" rel="noreferrer" className="relative block aspect-square bg-cream">
                     <Image src={p.url} alt="" fill sizes="220px" className={kind === "logo" || kind === "menu" ? "object-contain" : "object-cover"} />
                   </a>
-                  {kind !== "logo" && kind !== "menu" && (
+                  {canAdd && kind !== "logo" && kind !== "menu" && (
                     <button onClick={() => toGallery(p.url)} disabled={!!added[p.url] && added[p.url] !== "error"} className="w-full py-2 text-xs font-semibold text-rose hover:bg-blush disabled:text-ink-soft">
                       {added[p.url] === "busy" ? "Adding…" : added[p.url] === "done" ? "In the gallery ✓" : added[p.url] === "error" ? "Try again" : "+ Add to gallery"}
                     </button>

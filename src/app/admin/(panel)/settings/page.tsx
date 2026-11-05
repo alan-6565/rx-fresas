@@ -9,6 +9,7 @@ import { PaymentsCard } from "./PaymentsCard";
 import { DeliveryCard } from "./DeliveryCard";
 import { getDelivery } from "@/lib/delivery-store";
 import { emailReady } from "@/lib/email";
+import { isOwner } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
       <div className="mt-6">
         <DeliveryCard initial={delivery} emailOn={emailReady()} />
       </div>
-      <SettingsView origin={origin} token={token} intake={intake} info={info} names={{ spots: Object.fromEntries(spots.map((s) => [s.id, s.name])), categories: Object.fromEntries(menu.categories.filter((c) => menu.items.some((i) => i.category === c.id)).map((c) => [c.id, c.title])) }} />
+      <SettingsView owner={await isOwner()} origin={origin} token={token} intake={intake} info={info} names={{ spots: Object.fromEntries(spots.map((s) => [s.id, s.name])), categories: Object.fromEntries(menu.categories.filter((c) => menu.items.some((i) => i.category === c.id)).map((c) => [c.id, c.title])) }} />
     </>
   );
 }

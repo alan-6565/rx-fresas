@@ -15,7 +15,7 @@ function Logo() {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ owner }: { owner: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -28,7 +28,7 @@ export default function Sidebar() {
 
   const nav = (
     <nav className="mt-6 flex flex-col gap-1">
-      {adminNav.map(({ href, label, icon: Icon }) => (
+      {adminNav.filter((n) => owner || !n.ownerOnly).map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
