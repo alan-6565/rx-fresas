@@ -3,8 +3,8 @@ import { cleanEmail, cleanPhone } from "@/lib/business";
 import { addressLine, milesText, type Address } from "@/lib/delivery";
 import { quoteDelivery } from "@/lib/geo";
 import { getDelivery } from "@/lib/delivery-store";
-import { checkRewardCode, linkRewardCode, pointsFor } from "@/lib/rewards";
-import { freeDrinkCents, POINTS_FOR_DRINK } from "@/lib/rewards-rules";
+import { checkRewardCode, isFirstOrder, linkRewardCode, pointsFor } from "@/lib/rewards";
+import { discountLabel, firstOrderCents, freeDrinkCents, POINTS_FOR_DRINK } from "@/lib/rewards-rules";
 import { getMenu, getSpots } from "@/lib/catalog";
 import { deliverySlots, pickupDays, pickupSlots, type PickupDay } from "@/lib/schedule";
 import { quote, type Line } from "@/lib/pricing";
@@ -22,6 +22,8 @@ type Body = {
   email?: string;
   type?: "pickup" | "delivery";
   address?: Partial<Address>;
+  /** Gate code, where to leave it, etc. */
+  instructions?: string;
   /** Emailed code for a free drink with points */
   rewardCode?: string;
   notes?: string;
@@ -97,8 +99,11 @@ export async function POST(req: NextRequest) {
     if ("error" in used) return bad(used.error);
     rewardId = used.id;
     q = quote(lines, menu, { deliveryFee, discount: freeDrinkCents });
+  } else if (await isFirstOrder(phone, email).catch(() => false)) {
+    q = quote(lines, menu, { deliveryFee, discount: firstOrderCents });
   }
 
+  const discountName = q.discount ? discountLabel(rewardId ? POINTS_FOR_DRINK : 0, q.lines) : null;
   const { data: order, error } = await supabaseAdmin
     .from("orders")
     .insert({
@@ -108,8 +113,10 @@ export async function POST(req: NextRequest) {
       notes,
       fulfillment_type: delivering ? "delivery" : "pickup",
       delivery_address: address,
+      delivery_instructions: delivering ? body.instructions?.trim().slice(0, 200) || null : null,
       delivery_fee_cents: q.deliveryFee,
       discount_cents: q.discount,
+      discount_label: discountName,
       points_redeemed: rewardId ? POINTS_FOR_DRINK : 0,
       location: spot.name,
       pickup_day: day,
@@ -145,9 +152,9 @@ export async function POST(req: NextRequest) {
   const origin = new URL(req.url).origin;
   const fee = (name: string, cents: number) => ({ quantity: 1, price_data: { currency: "usd", unit_amount: cents, product_data: { name } } });
 
-  // Stripe has no negative lines, so the free drink is a one-time coupon on R&X's account
-  const coupon = q.discount
-    ? await stripe.coupons.create({ amount_off: q.discount, currency: "usd", duration: "once", max_redemptions: 1, name: `Bebida gratis (${POINTS_FOR_DRINK} puntos)` }, { stripeAccount: account })
+  // Stripe has no negative lines, so a discount is a one-time coupon on R&X's account
+  const coupon = discountName
+    ? await stripe.coupons.create({ amount_off: q.discount, currency: "usd", duration: "once", max_redemptions: 1, name: discountName }, { stripeAccount: account })
     : null;
 
   // Direct charge on R&X's account: Stripe takes its fee there (covered by the

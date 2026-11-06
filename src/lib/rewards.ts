@@ -39,6 +39,14 @@ export async function pointsFor(phone: string): Promise<{ points: number; earned
   return { points: Math.max(0, earned - spent), earned, email };
 }
 
+/** True when neither the phone nor the email has a paid order yet */
+export async function isFirstOrder(phone: string, email: string) {
+  const paid = (column: string, value: string) => supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).eq("payment_status", "paid").eq(column, value);
+  const [byPhone, byEmail] = await Promise.all([paid("customer_phone", phone), email ? paid("customer_email", email) : null]);
+  if (byPhone.error || byEmail?.error) throw byPhone.error ?? byEmail?.error;
+  return !byPhone.count && !byEmail?.count;
+}
+
 /** Emails a 6-digit code; at most 3 every 15 minutes per phone */
 export async function createRewardCode(phone: string, email: string): Promise<{ code: string } | { error: string }> {
   const since = new Date(Date.now() - CODE_MINUTES * 60_000).toISOString();

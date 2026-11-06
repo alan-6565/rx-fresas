@@ -8,7 +8,7 @@ import { addressProblem, milesText, type Address, type DeliverySettings } from "
 import { deliverySlots, pacificMinutes, pickupDays, pickupSlots, slotMinutes, truckStatus, type PickupDay, type Spot } from "@/lib/schedule";
 import { statusLine, useNow } from "@/components/TruckNow";
 import { PLATFORM_FEE_PER_ITEM, quote } from "@/lib/pricing";
-import { freeDrinkCents, POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
+import { discountLabel, firstOrderCents, freeDrinkCents, POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
 import { useCart } from "@/lib/cart";
 import { PageTop, Photo } from "@/components/ui";
 import { AppleIcon, ArrowRightIcon, BagIcon, BoltIcon, CarIcon, ClockIcon, HeartDoodle, LockIcon, PinIcon, StarIcon, TrashIcon } from "@/components/icons";
@@ -142,6 +142,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState<Address>({ street: "", unit: "", city: "Richmond", zip: "" });
+  const [instructions, setInstructions] = useState("");
   const [tried, setTried] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -149,6 +150,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
 
   // Points
   const [rewards, setRewards] = useState<Rewards>(undefined);
+  const [firstOrder, setFirstOrder] = useState(false);
   const [codeSentTo, setCodeSentTo] = useState("");
   const [code, setCode] = useState("");
   const [rewardCode, setRewardCode] = useState("");
@@ -202,7 +204,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
   const hasDrink = freeDrinkCents(quote(lines, cart.menu).lines) > 0;
   // A free drink only counts while there's a drink in the order
   const reward = hasDrink ? rewardCode : "";
-  const q = quote(lines, cart.menu, { deliveryFee: dOk ? dOk.feeCents : 0, discount: reward ? freeDrinkCents : undefined });
+  const q = quote(lines, cart.menu, { deliveryFee: dOk ? dOk.feeCents : 0, discount: reward ? freeDrinkCents : firstOrder ? firstOrderCents : undefined });
   const serviceFee = q.platformFee + q.cardFee;
 
   const addrProblem = !delivering ? "" : addrMissing || (!dQuote ? "Calculando tu entrega…" : "error" in dQuote ? dQuote.error : "");
@@ -228,11 +230,13 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
     if (firstProblem) return setError(firstProblem);
     goTo(2);
     setRewards(undefined);
+    setFirstOrder(false);
     // Points for this phone, fetched fresh each time they get to the review
     try {
-      const res = await fetch("/api/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", phone: cleanPh }) });
+      const res = await fetch("/api/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", phone: cleanPh, email: cleanEm }) });
       const data = await res.json();
       setRewards(res.ok ? { points: data.points, canRedeem: data.canRedeem } : null);
+      setFirstOrder(res.ok && data.firstOrder === true);
     } catch {
       setRewards(null);
     }
@@ -275,6 +279,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
           notes,
           type,
           address: delivering ? address : undefined,
+          instructions: delivering ? instructions : undefined,
           location: spot.name,
           day: when.day,
           time: when.time,
@@ -388,6 +393,8 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                               ? "Calculando tu entrega…"
                               : `La entrega se cobra por milla desde donde esté el truck (hasta ${milesText(delivery.maxMiles)}) · mínimo ${money(delivery.minCents / 100)}`}
                       </p>
+                      {minProblem && <p className="mt-1 text-sm font-semibold text-rose-dark">Te faltan {money((delivery.minCents - q.subtotal) / 100)} para el mínimo de entrega.</p>}
+                      <input value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={200} placeholder="Instrucciones (opc.): código de la puerta, dejar en el porche…" className={`${input} mt-3`} />
                     </div>
                   ) : (
                     <label className="block">
@@ -466,6 +473,12 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                       {cleanPh} · {cleanEm}
                     </dd>
                   </div>
+                  {delivering && instructions.trim() && (
+                    <div>
+                      <dt className="text-sm text-ink-soft">Instrucciones</dt>
+                      <dd className="text-sm">{instructions}</dd>
+                    </div>
+                  )}
                   {notes.trim() && (
                     <div>
                       <dt className="text-sm text-ink-soft">Notas</dt>
@@ -597,7 +610,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
             </div>
             {q.discount > 0 && (
               <div className="flex justify-between font-semibold text-wine">
-                <dt>Bebida gratis ⭐</dt>
+                <dt>{discountLabel(reward ? POINTS_FOR_DRINK : 0, q.lines)}</dt>
                 <dd>−{money(q.discount / 100)}</dd>
               </div>
             )}

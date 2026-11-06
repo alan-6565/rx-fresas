@@ -24,7 +24,9 @@ export const STATUS = {
   new: { label: "Pending", cls: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500" },
   preparing: { label: "Preparing", cls: "bg-sky-50 text-sky-700 border-sky-200", dot: "bg-sky-500" },
   ready: { label: "Ready", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
+  out_for_delivery: { label: "Out for Delivery", cls: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500" },
   picked_up: { label: "Picked Up", cls: "bg-lime-50 text-lime-700 border-lime-200", dot: "bg-lime-600" },
+  delivered: { label: "Delivered", cls: "bg-lime-50 text-lime-700 border-lime-200", dot: "bg-lime-600" },
   cancelled: { label: "Cancelled", cls: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500" },
 } as const;
 export type Status = keyof typeof STATUS;

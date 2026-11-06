@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { toppings } from "@/lib/data";
 import { getMenu } from "@/lib/catalog";
+import { FIRST_ORDER_CATEGORIES, firstOrderPercent } from "@/lib/rewards-rules";
 import { MenuHero } from "@/components/menu/MenuHero";
 import { MenuItems } from "@/components/menu/MenuItems";
 
@@ -32,6 +33,19 @@ function Toppings() {
   );
 }
 
+/** The first-order discount by section, worked out from each section's lowest price */
+function FirstOrderBanner({ sections }: { sections: { id: string; label: string; items: { price: number }[] }[] }) {
+  const deals = sections.filter((s) => FIRST_ORDER_CATEGORIES.includes(s.id) && s.items.length).map((s) => ({ id: s.id, label: s.label, percent: firstOrderPercent(Math.round(Math.min(...s.items.map((i) => i.price)) * 100)) }));
+  if (!deals.length) return null;
+  return (
+    <section className="mt-8 rounded-[2rem] bg-wine px-6 py-5 text-center text-white">
+      <h2 className="text-xl font-extrabold sm:text-2xl">🎉 Hasta {Math.max(...deals.map((d) => d.percent))}% de descuento en tu primer pedido</h2>
+      <p className="mt-1 text-sm sm:text-base">{deals.map((d) => `${d.label}: hasta ${d.percent}%`).join(" · ")}</p>
+      <p className="mt-1 text-xs text-white/80">En 1 bebida o fresas con crema de tu primer pedido en línea. El porcentaje depende del precio.</p>
+    </section>
+  );
+}
+
 export default async function MenuPage() {
   const menu = await getMenu();
   // Empty categories stay off the menu, except Extras, which explains the toppings
@@ -42,6 +56,7 @@ export default async function MenuPage() {
     <>
       <MenuHero />
       <div className="mx-auto max-w-7xl px-4 sm:px-8">
+        <FirstOrderBanner sections={sections} />
         <MenuItems sections={sections} />
 
         <Toppings />

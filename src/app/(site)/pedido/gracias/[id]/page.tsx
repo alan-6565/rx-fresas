@@ -9,6 +9,7 @@ import { pointsFor } from "@/lib/rewards";
 import { POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
 import { HeartSolid, StarIcon } from "@/components/icons";
 import { ClearCart } from "./ClearCart";
+import { Tracker } from "./Tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,12 @@ type Order = {
   customer_phone: string;
   customer_email: string | null;
   fulfillment_type: "pickup" | "delivery";
+  fulfillment_status: string;
   delivery_address: string | null;
+  delivery_photo_url: string | null;
   delivery_fee_cents: number;
   discount_cents: number;
+  discount_label: string | null;
   order_number: number | null;
   location: string;
   pickup_day: string;
@@ -100,6 +104,8 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
         </p>
       )}
 
+      {delivery && <Tracker status={order.fulfillment_status} photoUrl={order.delivery_photo_url} />}
+
       {points !== null && (
         <div className="mt-8 rounded-3xl border border-rose/30 bg-blush/60 p-5 text-left">
           <p className="flex items-center gap-2 font-bold">
@@ -131,7 +137,7 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
         <dl className="mt-3 pt-3 border-t border-line space-y-1 text-sm text-ink-soft">
           {order.discount_cents > 0 && (
             <div className="flex justify-between font-semibold text-wine">
-              <dt>Bebida gratis ⭐</dt>
+              <dt>{order.discount_label ?? "Bebida gratis ⭐"}</dt>
               <dd>−{money(order.discount_cents / 100)}</dd>
             </div>
           )}

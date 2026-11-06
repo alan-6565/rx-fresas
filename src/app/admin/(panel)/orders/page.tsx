@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { money } from "@/lib/data";
 import { pickedSummary } from "@/lib/options";
+import { shrink } from "@/lib/shrink";
 import { RANGES, type Range, type StaffOrder } from "@/lib/order-types";
 import { clearOrderBanners, isIOS, playChime, pushState, soundOn, startAlerts, turnOnPush, type PushState } from "@/lib/alerts";
 import { Card, PageHeader, STATUS, StatusPill, type Status } from "@/components/admin/ui";
@@ -17,7 +18,9 @@ const TABS: { id: "all" | Status; label: string }[] = [
   { id: "new", label: "Pending" },
   { id: "preparing", label: "Preparing" },
   { id: "ready", label: "Ready" },
+  { id: "out_for_delivery", label: "Out for Delivery" },
   { id: "picked_up", label: "Picked Up" },
+  { id: "delivered", label: "Delivered" },
   { id: "cancelled", label: "Cancelled" },
 ];
 
@@ -26,14 +29,33 @@ const NEXT_STEP: Partial<Record<Status, { to: Status; label: string; cls: string
   new: { to: "preparing", label: "Accept", cls: "bg-rose hover:bg-rose-dark text-white" },
   preparing: { to: "ready", label: "Mark Ready", cls: "bg-sky-600 hover:bg-sky-700 text-white" },
   ready: { to: "picked_up", label: "Picked Up", cls: "bg-emerald-600 hover:bg-emerald-700 text-white" },
+  out_for_delivery: { to: "delivered", label: "Delivered", cls: "bg-emerald-600 hover:bg-emerald-700 text-white" },
 };
 
-/** Delivery orders say "Out for Delivery" and "Delivered" instead */
+/** Delivery orders go straight from Preparing to Out for Delivery */
 const stepFor = (o: StaffOrder) => {
   const step = NEXT_STEP[o.fulfillment_status];
-  if (!step || o.fulfillment_type !== "delivery") return step;
-  return { ...step, label: step.to === "ready" ? "Out for Delivery" : step.to === "picked_up" ? "Delivered" : step.label };
+  return o.fulfillment_type === "delivery" && step?.to === "ready" ? { ...step, to: "out_for_delivery" as const, label: "Out for Delivery" } : step;
 };
+
+const callHref = (o: StaffOrder) => `tel:${o.customer_phone.replace(/[^\d+]/g, "")}`;
+const mapsHref = (o: StaffOrder) => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(o.delivery_address ?? "")}`;
+
+/** The driver's two shortcuts on a delivery that's still going */
+function DeliveryLinks({ order: o }: { order: StaffOrder }) {
+  if (o.fulfillment_type !== "delivery" || ["delivered", "cancelled"].includes(o.fulfillment_status)) return null;
+  const link = "rounded-lg border border-violet-300 bg-white px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-50";
+  return (
+    <span className="mt-1.5 flex gap-2">
+      <a href={mapsHref(o)} target="_blank" rel="noreferrer" className={link}>
+        Maps
+      </a>
+      <a href={callHref(o)} className={link}>
+        Call
+      </a>
+    </span>
+  );
+}
 
 const itemsText = (o: StaffOrder) =>
   o.order_items.map((i) => `${i.name}${i.options?.length ? ` (${pickedSummary(i.options)})` : ""} x${i.quantity}`).join(", ");
@@ -121,9 +143,9 @@ export default function OrdersPage() {
     setPush(await turnOnPush());
   };
 
-  const setStatus = async (id: string, status: Status) => {
+  const setStatus = async (id: string, status: Status, photoUrl?: string) => {
     setBusyId(id);
-    const res = await fetch(`/api/admin/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    const res = await fetch(`/api/admin/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, photoUrl }) });
     if (!res.ok) setError(((await res.json().catch(() => ({}))) as { error?: string }).error ?? "Couldn't update that order");
     else {
       const num = orders?.find((o) => o.id === id)?.order_number;
@@ -154,6 +176,9 @@ export default function OrdersPage() {
       // Waiting orders first, then by pickup time
       .sort((a, b) => Number(b.fulfillment_status === "new") - Number(a.fulfillment_status === "new") || a.created_at.localeCompare(b.created_at) * -1);
   }, [orders, tab, search]);
+
+  // "Delivered" needs a photo, which is taken from the order's drawer
+  const advance = (o: StaffOrder, to: Status) => (to === "delivered" ? setOpenId(o.id) : setStatus(o.id, to));
 
   const open = orders?.find((o) => o.id === openId) ?? todays.find((o) => o.id === openId) ?? null;
 
@@ -271,6 +296,7 @@ export default function OrdersPage() {
                           <span className="block max-w-48">
                             <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">🚗 Delivery</span>
                             <span className="mt-0.5 block text-xs text-ink-soft line-clamp-2">{o.delivery_address}</span>
+                            <DeliveryLinks order={o} />
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-0.5 text-xs font-semibold text-rose">
@@ -292,7 +318,7 @@ export default function OrdersPage() {
                         <div className="flex justify-end gap-2">
                           {step && (
                             <button
-                              onClick={() => setStatus(o.id, step.to)}
+                              onClick={() => advance(o, step.to)}
                               disabled={busyId === o.id}
                               className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${step.cls} ${isNew ? "ring-4 ring-rose/25 shadow-md" : ""}`}
                             >
@@ -329,10 +355,11 @@ export default function OrdersPage() {
                     </div>
                     <p className="mt-2 text-sm">{itemsText(o)}</p>
                     {o.notes && <p className="mt-1 text-xs text-rose-dark">Note: {o.notes}</p>}
+                    <DeliveryLinks order={o} />
                     <div className="mt-3 flex items-center gap-2">
                       <span className="flex-1 font-semibold">{money(o.subtotal_cents / 100)}</span>
                       {step && (
-                        <button onClick={() => setStatus(o.id, step.to)} disabled={busyId === o.id} className={`rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50 ${step.cls}`}>
+                        <button onClick={() => advance(o, step.to)} disabled={busyId === o.id} className={`rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50 ${step.cls}`}>
                           {step.label}
                         </button>
                       )}
@@ -352,16 +379,36 @@ export default function OrdersPage() {
         Totals are what R&amp;X keeps (menu prices). Updates every few seconds. Unpaid checkouts never show here.
       </p>
 
-      {open && <OrderDrawer order={open} busy={busyId === open.id} onClose={() => setOpenId(null)} onStatus={(s) => setStatus(open.id, s)} />}
+      {open && <OrderDrawer order={open} busy={busyId === open.id} onClose={() => setOpenId(null)} onStatus={(s, photoUrl) => setStatus(open.id, s, photoUrl)} />}
     </>
   );
 }
 
-function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder; busy: boolean; onClose: () => void; onStatus: (s: Status) => void }) {
+function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder; busy: boolean; onClose: () => void; onStatus: (s: Status, photoUrl?: string) => void }) {
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const step = stepFor(o);
-  const back: Partial<Record<Status, Status>> = { preparing: "new", ready: "preparing", picked_up: "ready" };
-  const canCancel = ["new", "preparing", "ready"].includes(o.fulfillment_status);
+  const back: Partial<Record<Status, Status>> = { preparing: "new", ready: "preparing", out_for_delivery: "preparing", picked_up: "ready", delivered: "out_for_delivery" };
+  const canCancel = ["new", "preparing", "ready", "out_for_delivery"].includes(o.fulfillment_status);
+
+  const sendPhoto = async (file: File) => {
+    setUploading(true);
+    setPhotoError("");
+    try {
+      const form = new FormData();
+      form.append("file", await shrink(file));
+      form.append("folder", "deliveries");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!data.url) throw new Error(data.error);
+      onStatus("delivered", data.url);
+    } catch (e) {
+      setPhotoError((e instanceof Error && e.message) || "Couldn't upload the photo. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30" onClick={onClose}>
@@ -386,15 +433,16 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
 
           <Card className="p-4">
             <p className="text-lg font-bold">{o.customer_name}</p>
-            <a href={`tel:${o.customer_phone.replace(/[^\d+]/g, "")}`} className="mt-1 inline-flex items-center gap-1.5 text-rose font-semibold">
+            <a href={callHref(o)} className="mt-1 inline-flex items-center gap-1.5 text-rose font-semibold">
               <PhoneIcon className="w-4 h-4" /> {phoneText(o.customer_phone)}
             </a>
             {o.fulfillment_type === "delivery" ? (
               <div className="mt-3 rounded-xl border-2 border-violet-200 bg-violet-50 p-3 text-sm">
                 <p className="font-bold text-violet-800">🚗 Delivery · {dayText(o.pickup_date)} at {o.pickup_time}</p>
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(o.delivery_address ?? "")}`} target="_blank" rel="noreferrer" className="mt-1 block font-semibold text-violet-700 underline">
+                <a href={mapsHref(o)} target="_blank" rel="noreferrer" className="mt-1 block font-semibold text-violet-700 underline">
                   {o.delivery_address}
                 </a>
+                {o.delivery_instructions && <p className="mt-2 text-violet-900"><strong>Instructions:</strong> {o.delivery_instructions}</p>}
               </div>
             ) : (
               <p className="mt-3 text-sm">
@@ -431,7 +479,7 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
             </ul>
             {o.discount_cents > 0 && (
               <div className="mt-3 pt-3 border-t border-line flex justify-between text-sm font-semibold text-violet-700">
-                <span>⭐ Free drink (100 points)</span>
+                <span>{o.points_redeemed > 0 ? "⭐ Free drink (100 points)" : "🎉 First order discount"}</span>
                 <span>−{money(o.discount_cents / 100)}</span>
               </div>
             )}
@@ -450,11 +498,37 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
             </p>
           </Card>
 
-          {step && (
-            <button onClick={() => onStatus(step.to)} disabled={busy} className={`w-full rounded-xl py-4 text-lg font-bold disabled:opacity-50 ${step.cls}`}>
-              {step.label}
-            </button>
+          {o.delivery_photo_url && (
+            <a href={o.delivery_photo_url} target="_blank" rel="noreferrer" className="block">
+              {/* eslint-disable-next-line @next/next/no-img-element -- a staff-only proof photo */}
+              <img src={o.delivery_photo_url} alt={`Delivery photo for order #${o.order_number}`} className="w-full rounded-2xl" />
+            </a>
           )}
+
+          {step?.to === "delivered" ? (
+            <label className={`block w-full cursor-pointer rounded-xl py-4 text-center text-lg font-bold ${step.cls} ${uploading || busy ? "pointer-events-none opacity-50" : ""}`}>
+              {uploading || busy ? "Saving photo…" : "📷 Take Photo & Mark Delivered"}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="sr-only"
+                disabled={uploading || busy}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) void sendPhoto(file);
+                }}
+              />
+            </label>
+          ) : (
+            step && (
+              <button onClick={() => onStatus(step.to)} disabled={busy} className={`w-full rounded-xl py-4 text-lg font-bold disabled:opacity-50 ${step.cls}`}>
+                {step.label}
+              </button>
+            )
+          )}
+          {photoError && <p role="alert" className="text-sm font-semibold text-rose-dark">{photoError}</p>}
           {back[o.fulfillment_status] && (
             <button onClick={() => onStatus(back[o.fulfillment_status]!)} disabled={busy} className="w-full rounded-xl border border-line bg-white py-2.5 text-sm font-semibold">
               Undo: back to {STATUS[back[o.fulfillment_status]!].label}

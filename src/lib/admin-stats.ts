@@ -67,7 +67,7 @@ export async function dashboardStats() {
     ordersChange: change(placedToday.length, placedYesterday.length),
     salesToday: sales(placedToday),
     salesChange: change(sales(placedToday), sales(placedYesterday)),
-    pending: rows.filter((r) => r.pickup_date === today && ["new", "preparing", "ready"].includes(r.fulfillment_status)).length,
+    pending: rows.filter((r) => r.pickup_date === today && ["new", "preparing", "ready", "out_for_delivery"].includes(r.fulfillment_status)).length,
     returning,
     customers: visits.size,
     byHour,

@@ -63,11 +63,13 @@ type EmailOrder = {
   customer_phone: string;
   fulfillment_type: "pickup" | "delivery";
   delivery_address: string | null;
+  delivery_photo_url: string | null;
   location: string;
   pickup_day: string;
   pickup_time: string;
   subtotal_cents: number;
   discount_cents: number;
+  discount_label: string | null;
   delivery_fee_cents: number;
   platform_fee_cents: number;
   card_fee_cents: number;
@@ -82,7 +84,7 @@ async function loadOrder(id: string) {
 }
 
 /** Marks the email as sent; false if it already was (or there's nowhere to send it) */
-async function claim(id: string, column: "confirmation_emailed_at" | "ready_emailed_at") {
+async function claim(id: string, column: "confirmation_emailed_at" | "ready_emailed_at" | "delivered_emailed_at") {
   const { data } = await supabaseAdmin.from("orders").update({ [column]: new Date().toISOString() }).eq("id", id).is(column, null).select("id");
   return !!data?.length;
 }
@@ -116,7 +118,7 @@ export async function sendOrderConfirmation(orderId: string) {
   }</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;border-top:1px solid #f1dede;border-bottom:1px solid #f1dede">${rows}</table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px">
-${line("Bebida gratis (puntos)", o.discount_cents, true)}${line("Entrega", o.delivery_fee_cents)}${line("Tarifa de servicio", o.platform_fee_cents + o.card_fee_cents)}
+${line(o.discount_label ?? "Bebida gratis ⭐", o.discount_cents, true)}${line("Entrega", o.delivery_fee_cents)}${line("Tarifa de servicio", o.platform_fee_cents + o.card_fee_cents)}
 <tr><td style="padding:8px 0 0;font-weight:bold;font-size:16px">Total pagado</td><td align="right" style="padding:8px 0 0;font-weight:bold;font-size:16px;color:${ROSE}">${usd(o.total_cents)}</td></tr>
 </table>
 <p style="margin:20px 0 0;padding:14px 16px;background:#fff5f6;border-radius:14px;font-size:14px">⭐ Ganaste <strong>${POINTS_PER_ORDER} puntos</strong>. Llevas <strong>${points} de ${POINTS_FOR_DRINK}</strong> para una bebida gratis.</p>
@@ -139,10 +141,24 @@ export async function sendOrderReady(orderId: string) {
   const delivery = o.fulfillment_type === "delivery";
   const title = delivery ? "¡Tu pedido va en camino! 🚗" : "¡Tu pedido está listo! 🍓";
   const body = delivery
-    ? `<p style="margin:0;font-size:16px;line-height:1.5">Tu pedido ${number} salió del truck y va a <strong>${esc(o.delivery_address ?? "")}</strong>.</p>`
+    ? `<p style="margin:0;font-size:16px;line-height:1.5">Tu pedido ${number} salió del truck y va a <strong>${esc(o.delivery_address ?? "")}</strong>.</p>
+${button(`${SITE}/pedido/gracias/${o.id}`, "Seguir mi pedido")}`
     : `<p style="margin:0;font-size:16px;line-height:1.5">Pasa por tu pedido ${number} en <strong>${esc(o.location)}</strong>. Solo di tu nombre: <strong>${esc(o.customer_name)}</strong>.</p>`;
   const text = delivery ? `Tu pedido ${number} va en camino a ${o.delivery_address}.` : `Tu pedido ${number} está listo en ${o.location}. Di tu nombre: ${o.customer_name}.`;
   await send(o.customer_email, title, layout(title, body), text);
+}
+
+export async function sendOrderDelivered(orderId: string) {
+  if (!mailer()) return;
+  const o = await loadOrder(orderId);
+  if (!o?.customer_email || !(await claim(o.id, "delivered_emailed_at"))) return;
+
+  const number = o.order_number ? `#${o.order_number}` : "";
+  const title = "¡Tu pedido llegó! 🍓";
+  const body = `<p style="margin:0 0 16px;font-size:16px;line-height:1.5">Entregamos tu pedido ${number} en <strong>${esc(o.delivery_address ?? "")}</strong>. ¡Que lo disfrutes!</p>
+${o.delivery_photo_url ? `<img src="${esc(o.delivery_photo_url)}" alt="Foto de tu entrega" width="440" style="display:block;width:100%;max-width:440px;border-radius:14px">` : ""}
+${button(`${SITE}/pedido/gracias/${o.id}`, "Ver mi pedido")}`;
+  await send(o.customer_email, title, layout(title, body), `Entregamos tu pedido ${number} en ${o.delivery_address}. ${SITE}/pedido/gracias/${o.id}`);
 }
 
 export async function sendRewardCode(email: string, code: string) {
