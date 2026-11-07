@@ -391,7 +391,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                             ? dQuote.error
                             : quoteKey
                               ? "Calculando tu entrega…"
-                              : `La entrega se cobra por milla desde donde esté el truck (hasta ${milesText(delivery.maxMiles)}) · mínimo ${money(delivery.minCents / 100)}`}
+                              : `La entrega se cobra por milla desde donde esté el truck (hasta ${milesText(delivery.maxMiles)})${delivery.minCents ? ` · mínimo ${money(delivery.minCents / 100)}` : ""}`}
                       </p>
                       {minProblem && <p className="mt-1 text-sm font-semibold text-rose-dark">Te faltan {money((delivery.minCents - q.subtotal) / 100)} para el mínimo de entrega.</p>}
                       <input value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={200} placeholder="Instrucciones (opc.): código de la puerta, dejar en el porche…" className={`${input} mt-3`} />
