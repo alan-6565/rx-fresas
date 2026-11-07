@@ -152,9 +152,10 @@ export async function POST(req: NextRequest) {
   const origin = new URL(req.url).origin;
   const fee = (name: string, cents: number) => ({ quantity: 1, price_data: { currency: "usd", unit_amount: cents, product_data: { name } } });
 
-  // Stripe has no negative lines, so a discount is a one-time coupon on R&X's account
+  // Stripe has no negative lines, so a discount is a one-time coupon on R&X's
+  // account. Stripe rejects coupon names over 40 characters.
   const coupon = discountName
-    ? await stripe.coupons.create({ amount_off: q.discount, currency: "usd", duration: "once", max_redemptions: 1, name: discountName }, { stripeAccount: account })
+    ? await stripe.coupons.create({ amount_off: q.discount, currency: "usd", duration: "once", max_redemptions: 1, name: [...discountName].slice(0, 40).join("").trim() }, { stripeAccount: account })
     : null;
 
   // Direct charge on R&X's account: Stripe takes its fee there (covered by the
@@ -162,7 +163,8 @@ export async function POST(req: NextRequest) {
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
-      locale: "es",
+      // Latin American Spanish shows $10.61; plain "es" is Spain's $10,61
+      locale: "es-419",
       // The card fee line is priced for Stripe's card rate; Klarna, bank and
       // the rest cost more. Apple Pay and Google Pay are cards, so they stay.
       payment_method_types: ["card"],
