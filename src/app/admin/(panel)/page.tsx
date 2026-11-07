@@ -4,6 +4,7 @@ import { dashboardStats } from "@/lib/admin-stats";
 import { money } from "@/lib/data";
 import { TIME_ZONE } from "@/lib/time";
 import { Card, PageHeader } from "@/components/admin/ui";
+import { TodaySpots } from "@/components/admin/TodaySpots";
 import { BagIcon, CalendarEditIcon, CartIcon, ClockIcon, HeartIcon, TrendIcon } from "@/components/admin/icons";
 
 export const dynamic = "force-dynamic";
@@ -93,6 +94,8 @@ export default async function DashboardPage() {
           </span>
         </span>
       </PageHeader>
+
+      <TodaySpots className="mt-6" />
 
       <div className="mt-6 grid grid-cols-2 xl:grid-cols-4 gap-4">
         <Stat label="Orders Today" value={String(s.ordersToday)} icon={<BagIcon className="w-9 h-9" />}>

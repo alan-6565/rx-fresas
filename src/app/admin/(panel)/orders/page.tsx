@@ -8,6 +8,7 @@ import { shrink } from "@/lib/shrink";
 import { RANGES, type Range, type StaffOrder } from "@/lib/order-types";
 import { clearOrderBanners, isIOS, playChime, pushState, soundOn, startAlerts, turnOnPush, type PushState } from "@/lib/alerts";
 import { Card, PageHeader, STATUS, StatusPill, type Status } from "@/components/admin/ui";
+import { TodaySpots } from "@/components/admin/TodaySpots";
 import { BagIcon, BellIcon, CloseIcon, PhoneIcon, SearchIcon } from "@/components/admin/icons";
 
 const POLL_MS = 5000;
@@ -211,6 +212,8 @@ export default function OrdersPage() {
         </button>
       </PageHeader>
 
+      <TodaySpots className="mt-5" />
+
       {!shiftOn && (
         <button onClick={startShift} className="mt-5 w-full rounded-2xl border-2 border-dashed border-rose bg-blush/60 px-5 py-4 text-left hover:bg-blush">
           <span className="block font-bold text-rose text-lg">Tap here to start your shift 🔔</span>
@@ -288,7 +291,7 @@ export default function OrdersPage() {
                         <span className="block text-xs text-ink-soft whitespace-nowrap">{phoneText(o.customer_phone)}</span>
                       </td>
                       <td className="px-4 py-3 max-w-xs">
-                        <span className="line-clamp-2">{itemsText(o)}</span>
+                        <span translate="no" className="notranslate line-clamp-2">{itemsText(o)}</span>
                         {o.notes && <span className="mt-0.5 block text-xs text-rose-dark line-clamp-1">Note: {o.notes}</span>}
                       </td>
                       <td className="px-4 py-3">
@@ -353,7 +356,7 @@ export default function OrdersPage() {
                       </div>
                       <StatusPill status={o.fulfillment_status} />
                     </div>
-                    <p className="mt-2 text-sm">{itemsText(o)}</p>
+                    <p translate="no" className="notranslate mt-2 text-sm">{itemsText(o)}</p>
                     {o.notes && <p className="mt-1 text-xs text-rose-dark">Note: {o.notes}</p>}
                     <DeliveryLinks order={o} />
                     <div className="mt-3 flex items-center gap-2">
@@ -464,7 +467,8 @@ function OrderDrawer({ order: o, busy, onClose, onStatus }: { order: StaffOrder;
             <ul className="space-y-2">
               {o.order_items.map((i, n) => (
                 <li key={n} className="flex justify-between gap-3">
-                  <span>
+                  {/* Item and option names stay as written even when the page is translated */}
+                  <span translate="no" className="notranslate">
                     <strong className="text-rose">{i.quantity}×</strong> {i.name}
                     {/* One line per group so it reads like a ticket: "Toppings: Oreo, KitKat" */}
                     {groupedOptions(i.options).map(([group, names]) => (

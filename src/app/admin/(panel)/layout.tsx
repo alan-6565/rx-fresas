@@ -13,7 +13,8 @@ export const viewport: Viewport = { themeColor: "#e8506a" };
 
 export default function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <div className="min-h-screen bg-[#fbeeec]">
+    // The dashboard is in English, so a phone translating it guesses the right language
+    <div lang="en" className="min-h-screen bg-[#fbeeec]">
       <Sidebar />
       <main className="lg:pl-60">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-8 py-6 sm:py-8">{children}</div>
