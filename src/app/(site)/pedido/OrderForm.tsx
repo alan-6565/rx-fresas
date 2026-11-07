@@ -585,8 +585,8 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                 <li key={l.key} className="flex items-center gap-3 py-3 first:pt-0">
                   {l.image !== NO_PHOTO && <Photo src={l.image} alt={l.name} className="h-16 w-16 shrink-0 rounded-2xl" sizes="64px" />}
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold leading-tight">{l.name}</p>
-                    <p className="line-clamp-2 text-sm text-ink-soft">{l.summary || l.desc}</p>
+                    <p translate="no" className="notranslate font-semibold leading-tight">{l.name}</p>
+                    <p className="line-clamp-2 text-sm text-ink-soft">{l.summary ? <span translate="no" className="notranslate">{l.summary}</span> : l.desc}</p>
                   </div>
                   <div className="flex shrink-0 items-center rounded-full border border-line bg-white">
                     <button onClick={() => cart.setQty(l.key, l.qty - 1)} aria-label={l.qty === 1 ? `Eliminar ${l.name}` : "Quitar uno"} className="grid h-9 w-9 place-items-center text-lg">

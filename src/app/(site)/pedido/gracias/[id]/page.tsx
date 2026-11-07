@@ -126,7 +126,7 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
         <ul className="space-y-1.5 text-sm">
           {order.order_items.map((i, n) => (
             <li key={n} className="flex justify-between gap-4">
-              <span>
+              <span translate="no" className="notranslate">
                 {i.quantity} × {i.name}
                 {i.options?.length ? <span className="block text-xs text-ink-soft">{pickedSummary(i.options)}</span> : null}
               </span>

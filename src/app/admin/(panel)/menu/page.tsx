@@ -135,7 +135,7 @@ export default function MenuAdmin() {
               </div>
               <div className="flex-1 p-4">
                 <div className="flex items-baseline justify-between gap-2">
-                  <h3 className="font-semibold leading-tight">{item.name}</h3>
+                  <h3 translate="no" className="notranslate font-semibold leading-tight">{item.name}</h3>
                   <span className="font-bold text-rose">{money(item.price_cents / 100)}</span>
                 </div>
                 <p className="mt-1 text-sm text-ink-soft">{item.description}</p>

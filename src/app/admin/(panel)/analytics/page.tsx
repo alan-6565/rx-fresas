@@ -142,7 +142,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
                   <li key={t.name}>
                     <div className="flex justify-between gap-3 text-sm">
                       <span className="font-medium">
-                        <span className="text-ink-soft">{i + 1}.</span> {t.name}
+                        <span className="text-ink-soft">{i + 1}.</span> <span translate="no" className="notranslate">{t.name}</span>
                       </span>
                       <span>
                         <strong>{t.sold}</strong> sold · {money(t.cents / 100)}
@@ -161,7 +161,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
                 <ul className="mt-3 divide-y divide-line">
                   {a.spots.map((s) => (
                     <li key={s.name} className="flex justify-between gap-3 py-2 text-sm">
-                      <span className="font-medium">{s.name}</span>
+                      <span translate="no" className="notranslate font-medium">{s.name}</span>
                       <span className="shrink-0">
                         {s.orders} orders · <strong>{money(s.cents / 100)}</strong>
                       </span>

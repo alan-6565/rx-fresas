@@ -63,7 +63,7 @@ export function OptionsSheet({ item, onAdd, onClose }: { item: Item; onAdd: (opt
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 pb-4">
-          <h2 className="mt-4 font-hand text-4xl leading-none">{item.name}</h2>
+          <h2 translate="no" className="notranslate mt-4 font-hand text-4xl leading-none">{item.name}</h2>
           {item.desc && <p className="mt-1 text-ink-soft">{item.desc}</p>}
 
           {groups.map((g) => (
@@ -94,7 +94,7 @@ export function OptionsSheet({ item, onAdd, onClose }: { item: Item; onAdd: (opt
                           onChange={() => toggle(g, c.id)}
                           className="h-5 w-5 accent-[var(--rose)]"
                         />
-                        <span className="flex-1">{c.name}</span>
+                        <span translate="no" className="notranslate flex-1">{c.name}</span>
                         {c.price_cents > 0 && <span className="text-sm font-semibold text-rose">+{money(c.price_cents / 100)}</span>}
                       </label>
                     );

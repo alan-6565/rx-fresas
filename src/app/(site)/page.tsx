@@ -186,7 +186,7 @@ export default async function Home() {
                   sizes="(min-width:1024px) 25vw, 50vw"
                 />
                 <div className="p-4 text-center">
-                  <h3 className="font-semibold leading-tight">{item.name}</h3>
+                  <h3 translate="no" className="notranslate font-semibold leading-tight">{item.name}</h3>
                   <p className="mt-1 text-rose font-bold">
                     {hasRequiredUpcharge({
                       price: item.price,
@@ -241,7 +241,7 @@ export default async function Home() {
                       sizes="(min-width:1024px) 28vw, 50vw"
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-4 sm:p-5 pt-16">
-                      <h3 className="font-hand text-3xl sm:text-4xl leading-none">
+                      <h3 translate="no" className="notranslate font-hand text-3xl sm:text-4xl leading-none">
                         {item.name}
                       </h3>
                       <p className="mt-1 text-sm text-cream/80">{item.desc}</p>

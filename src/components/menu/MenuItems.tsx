@@ -172,7 +172,7 @@ function ItemCard({ item, i, fav, onFav }: { item: Item; i: number; fav: boolean
       {item.image !== NO_PHOTO && <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="aspect-[4/5] w-32 shrink-0 rounded-2xl sm:w-40" sizes="160px" />}
       <div className="flex min-w-0 flex-1 flex-col py-1 pr-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-lg font-bold leading-tight">{item.name}</h3>
+          <h3 translate="no" className="notranslate text-lg font-bold leading-tight">{item.name}</h3>
           <Heart on={fav} name={item.name} onClick={onFav} />
         </div>
         <span className="mt-2 self-start rounded-full bg-blush px-3 py-1 font-bold">

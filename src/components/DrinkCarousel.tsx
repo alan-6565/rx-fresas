@@ -48,7 +48,7 @@ export function DrinkCarousel({ slides }: { slides: DrinkSlide[] }) {
                 <span className="absolute left-2 top-2 rounded-full bg-wine px-2.5 py-1 text-xs font-bold text-white shadow">Hasta {s.percent}%</span>
               </span>
               <span className="block p-3 text-center">
-                <span className="block truncate font-semibold leading-tight group-hover:text-rose">{s.name}</span>
+                <span translate="no" className="notranslate block truncate font-semibold leading-tight group-hover:text-rose">{s.name}</span>
                 <span className="mt-1 block text-sm font-bold text-rose">{s.price}</span>
               </span>
             </Link>

@@ -138,7 +138,7 @@ export default async function DashboardPage() {
                   <span className="relative w-11 h-11 rounded-lg overflow-hidden shrink-0">
                     <Image src={t.image} alt="" fill sizes="44px" className="object-cover" />
                   </span>
-                  <span className="flex-1 font-medium text-sm">{t.name}</span>
+                  <span translate="no" className="notranslate flex-1 font-medium text-sm">{t.name}</span>
                   <span className="text-sm font-semibold">{money(t.cents / 100)}</span>
                   <span className="w-16 text-right text-xs text-ink-soft">{t.sold} sold</span>
                 </li>
