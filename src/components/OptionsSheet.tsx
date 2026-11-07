@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Item } from "@/lib/data";
-import { money } from "@/lib/data";
+import { money, NO_PHOTO } from "@/lib/data";
 import { defaultPicks, groupHint, priceSelection, type OptionGroup } from "@/lib/options";
 import { Photo } from "@/components/ui";
 import { CloseIcon } from "@/components/icons";
@@ -56,8 +56,8 @@ export function OptionsSheet({ item, onAdd, onClose }: { item: Item; onAdd: (opt
         className="flex max-h-[92dvh] w-full sm:max-w-lg flex-col overflow-hidden rounded-t-[2rem] sm:rounded-[2rem] bg-cream shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative">
-          <Photo src={item.image} alt={item.name} className="h-40 sm:h-48" sizes="512px" />
+        <div className="relative min-h-14">
+          {item.image !== NO_PHOTO && <Photo src={item.image} alt={item.name} className="h-40 sm:h-48" sizes="512px" />}
           <button onClick={onClose} aria-label="Cerrar" className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow">
             <CloseIcon className="w-5 h-5" />
           </button>

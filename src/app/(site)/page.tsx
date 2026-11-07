@@ -7,6 +7,8 @@ import { getMenu } from "@/lib/catalog";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
 import { Handle, Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
+import { DrinkCarousel } from "@/components/DrinkCarousel";
+import { FIRST_ORDER_CATEGORIES, firstOrderPercent } from "@/lib/rewards-rules";
 import { Reveal } from "@/components/Reveal";
 import { HomePromos } from "@/components/promo/Promos";
 import { getPromotions } from "@/lib/promotions-store";
@@ -59,6 +61,17 @@ export default async function Home() {
       (item, i, list) => list.findIndex((x) => x.image === item.image) === i,
     )
     .slice(0, 4);
+  // The carousel: drinks and fresas with real photos, each with its first-order percent
+  const slides = items
+    .filter((i) => FIRST_ORDER_CATEGORIES.includes(i.category) && i.image !== NO_PHOTO)
+    .map((i) => ({
+      id: i.id,
+      name: i.name,
+      image: i.image,
+      category: i.category,
+      price: `${hasRequiredUpcharge({ price: i.price, options: i.options ?? [] }) ? "Desde " : ""}${money(i.price)}`,
+      percent: firstOrderPercent(Math.round(i.price * 100)),
+    }));
   const otono = items.filter((i) => i.category === "otono").slice(0, 2);
   const otonoTitle =
     categories.find((c) => c.id === "otono")?.label ?? "Para el Otoño";
@@ -134,6 +147,19 @@ export default async function Home() {
       </section>
 
       <HomePromos promotions={promotions.filter((p) => p.on && p.homeCard)} />
+
+      {/* First-order deal, with the drinks it works on */}
+      {slides.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-12">
+          <div className="rounded-[2rem] bg-blush px-4 py-6 sm:px-8">
+            <h2 className="text-center text-xl font-extrabold text-wine sm:text-2xl">🎉 Primer pedido: hasta {Math.max(...slides.map((s) => s.percent))}% de descuento en bebidas seleccionadas</h2>
+            <p className="mt-1 text-center text-xs text-ink-soft">En 1 bebida o fresas con crema de tu primer pedido en línea. El porcentaje depende del precio.</p>
+            <div className="mt-5">
+              <DrinkCarousel slides={slides} />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Menu preview */}
       <Reveal>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Item } from "@/lib/data";
-import { money } from "@/lib/data";
+import { money, NO_PHOTO } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { Photo } from "@/components/ui";
 import { AddButton } from "@/components/AddButton";
@@ -169,7 +169,7 @@ const cardClass =
 function ItemCard({ item, i, fav, onFav }: { item: Item; i: number; fav: boolean; onFav: () => void }) {
   return (
     <article style={{ animationDelay: `${Math.min(i, 8) * 70}ms` }} className={cardClass}>
-      <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="aspect-[4/5] w-32 shrink-0 rounded-2xl sm:w-40" sizes="160px" />
+      {item.image !== NO_PHOTO && <Photo slot={`item:${item.id}`} src={item.image} alt={item.name} className="aspect-[4/5] w-32 shrink-0 rounded-2xl sm:w-40" sizes="160px" />}
       <div className="flex min-w-0 flex-1 flex-col py-1 pr-1">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-lg font-bold leading-tight">{item.name}</h3>

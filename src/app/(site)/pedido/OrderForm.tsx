@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { money } from "@/lib/data";
+import { money, NO_PHOTO } from "@/lib/data";
 import { cleanEmail, cleanPhone } from "@/lib/business";
 import { addressProblem, milesText, type Address, type DeliverySettings } from "@/lib/delivery";
 import { deliverySlots, pacificMinutes, pickupDays, pickupSlots, slotMinutes, truckStatus, type PickupDay, type Spot } from "@/lib/schedule";
@@ -583,7 +583,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
             <ul className="mt-5 divide-y divide-line">
               {cart.lines.map((l) => (
                 <li key={l.key} className="flex items-center gap-3 py-3 first:pt-0">
-                  <Photo src={l.image} alt={l.name} className="h-16 w-16 shrink-0 rounded-2xl" sizes="64px" />
+                  {l.image !== NO_PHOTO && <Photo src={l.image} alt={l.name} className="h-16 w-16 shrink-0 rounded-2xl" sizes="64px" />}
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold leading-tight">{l.name}</p>
                     <p className="line-clamp-2 text-sm text-ink-soft">{l.summary || l.desc}</p>
