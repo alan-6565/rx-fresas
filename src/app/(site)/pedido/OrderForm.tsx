@@ -287,7 +287,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
           lines,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error(data.error ?? "No pudimos iniciar el pago. Intenta otra vez.");
       window.location.assign(data.url);
     } catch (e) {
