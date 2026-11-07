@@ -33,7 +33,7 @@ export function freeDrinkCents(lines: { item: { category: string; price: number 
 export function discountLabel(pointsRedeemed: number, lines: DiscountLine[]) {
   if (pointsRedeemed > 0) return "Bebida gratis ⭐";
   const percent = firstOrderPercent(Math.min(...firstOrderLines(lines).map((l) => l.unit)));
-  return `Primer pedido: ${percent}% en 1 bebida o fresas 🎉`;
+  return `Primer pedido: ${percent}% de descuento 🎉`;
 }
 
 /** "j***@gmail.com" */
