@@ -4,6 +4,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { pickedSummary, type Picked } from "@/lib/options";
 import { POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
 import { pointsFor } from "@/lib/rewards";
+import { getBusinessInfo } from "@/lib/business-info";
+import { pacificDate } from "@/lib/time";
 
 // Customer emails, sent from R&X's Gmail with an app password
 // (GMAIL_USER + GMAIL_APP_PASSWORD). Without those set, emails are skipped and
@@ -159,6 +161,49 @@ export async function sendOrderDelivered(orderId: string) {
 ${o.delivery_photo_url ? `<img src="${esc(o.delivery_photo_url)}" alt="Foto de tu entrega" width="440" style="display:block;width:100%;max-width:440px;border-radius:14px">` : ""}
 ${button(`${SITE}/pedido/gracias/${o.id}`, "Ver mi pedido")}`;
   await send(o.customer_email, title, layout(title, body), `Entregamos tu pedido ${number} en ${o.delivery_address}. ${SITE}/pedido/gracias/${o.id}`);
+}
+
+// New-order emails to R&X: one when the order is paid, then one every 30
+// seconds (the reminders timer) until someone accepts it, for 15 minutes.
+// Customer receipts go through the same Gmail, so these stop for the day at
+// ALERT_EMAILS_PER_DAY to keep room under Gmail's daily sending limit.
+const ALERT_EMAILS_PER_DAY = 300;
+
+/** Counts one alert email for today; false once today's limit is reached */
+async function claimAlertEmail() {
+  const today = pacificDate();
+  const { data } = await supabaseAdmin.from("settings").select("value").eq("key", "alert_emails").maybeSingle();
+  const saved = (() => {
+    try {
+      return JSON.parse(String(data?.value ?? "{}")) as { date?: string; count?: number };
+    } catch {
+      return {};
+    }
+  })();
+  const count = saved.date === today ? (saved.count ?? 0) : 0;
+  if (count >= ALERT_EMAILS_PER_DAY) return false;
+  await supabaseAdmin.from("settings").upsert({ key: "alert_emails", value: JSON.stringify({ date: today, count: count + 1 }), updated_at: new Date().toISOString() });
+  return true;
+}
+
+/** Emails R&X about a paid order nobody has accepted. `waited` is set on the repeats. Throws if Gmail refuses. */
+export async function sendStaffOrderAlert(orderId: string, waited?: string) {
+  if (!mailer()) return;
+  const [o, info] = await Promise.all([loadOrder(orderId), getBusinessInfo()]);
+  const to = info.email || process.env.GMAIL_USER;
+  if (!o || !to || !(await claimAlertEmail())) return;
+
+  const number = o.order_number ? `#${o.order_number}` : `#${o.id.slice(0, 8).toUpperCase()}`;
+  const delivery = o.fulfillment_type === "delivery";
+  const items = o.order_items
+    .map((i) => `<li style="padding:3px 0">${i.quantity} × ${esc(i.name)}${i.options?.length ? `<br><span style="font-size:12px;color:#8a6f6f">${esc(pickedSummary(i.options))}</span>` : ""}</li>`)
+    .join("");
+  const title = waited ? `⏰ Pedido ${number} sigue esperando · ${waited}` : `🔔 Nuevo pedido ${number}`;
+  const body = `<p style="margin:0 0 12px;font-size:16px;line-height:1.5"><strong>${esc(o.customer_name)}</strong> · ${delivery ? `🚗 Entrega a ${esc(o.delivery_address ?? "")}` : `Pickup en ${esc(o.location)}`} · ${esc(when(o))}</p>
+<ul style="margin:0;padding-left:18px;font-size:14px">${items}</ul>
+${button(`${SITE}/admin/orders`, "Abrir pedidos")}`;
+  const text = `${title}. ${o.customer_name}, ${delivery ? `entrega a ${o.delivery_address}` : `pickup en ${o.location}`}, ${when(o)}. ${o.order_items.map((i) => `${i.quantity} × ${i.name}`).join(", ")}. ${SITE}/admin/orders`;
+  await send(to, title, layout(title, body), text);
 }
 
 export async function sendRewardCode(email: string, code: string) {

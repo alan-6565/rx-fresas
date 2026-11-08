@@ -2,7 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { notifyStaff } from "@/lib/push";
-import { sendOrderConfirmation } from "@/lib/email";
+import { sendOrderConfirmation, sendStaffOrderAlert } from "@/lib/email";
 
 /**
  * The one place an order becomes paid: the webhook and the confirmation page
@@ -27,6 +27,7 @@ export async function markOrderPaid(orderId: string, paymentIntentId?: string | 
 
   // Only the call that flipped it to paid alerts the truck, so nobody gets it twice
   after(() => sendOrderConfirmation(orderId).catch((e) => console.error("[email] confirmation failed", e)));
+  after(() => sendStaffOrderAlert(orderId).catch((e) => console.error("[email] new order alert failed", e)));
   after(() =>
     notifyStaff({
       title: `New order #${order.order_number}`,
