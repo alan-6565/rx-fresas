@@ -1,5 +1,4 @@
 import "server-only";
-import nodemailer, { type Transporter } from "nodemailer";
 import { supabaseAdmin } from "@/lib/supabase";
 import { pickedSummary, type Picked } from "@/lib/options";
 import { POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
@@ -7,34 +6,69 @@ import { pointsFor } from "@/lib/rewards";
 import { getBusinessInfo } from "@/lib/business-info";
 import { pacificDate } from "@/lib/time";
 
-// Customer emails, sent from R&X's Gmail with an app password
-// (GMAIL_USER + GMAIL_APP_PASSWORD). Without those set, emails are skipped and
-// everything else keeps working. Each order email goes out once: the column
-// that marks it sent is claimed before sending.
+// Customer receipts and new-order alerts, sent through Resend (resend.com)
+// from R&X's own domain. Needs RESEND_API_KEY; EMAIL_FROM can change the
+// sender. Without the key, emails are skipped and everything else keeps
+// working. Each order email goes out once: the column that marks it sent is
+// claimed before sending. Replies go to R&X's email from the dashboard.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.ryxfresasandcoffee.com";
 const ROSE = "#e8506a";
+const FROM = process.env.EMAIL_FROM || "R&X Fresas con Crema <pedidos@ryxfresasandcoffee.com>";
 
-let transport: Transporter | null | undefined;
-function mailer() {
-  if (transport === undefined) {
-    const user = process.env.GMAIL_USER;
-    const pass = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
-    transport = user && pass ? nodemailer.createTransport({ service: "gmail", auth: { user, pass } }) : null;
+export const emailReady = () => !!process.env.RESEND_API_KEY;
+
+class ResendError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
   }
-  return transport;
 }
 
-export const emailReady = () => !!mailer();
-
 async function send(to: string, subject: string, html: string, text: string) {
-  const m = mailer();
-  if (!m) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
     console.info(`[email] not configured, skipped: ${subject}`);
     return false;
   }
-  await m.sendMail({ from: { name: "R&X Fresas con Crema", address: process.env.GMAIL_USER! }, to, subject, html, text });
+  const { email: replyTo } = await getBusinessInfo();
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: FROM, to: [to], subject, html, text, ...(replyTo ? { reply_to: replyTo } : {}) }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new ResendError(res.status, body.message ?? `Resend answered ${res.status}`);
+  }
   return true;
+}
+
+/** Translates Resend's refusal into what to fix */
+function explain(e: unknown) {
+  const raw = (e as Error).message ?? String(e);
+  const status = e instanceof ResendError ? e.status : 0;
+  if (status === 401 || status === 400 && /api key/i.test(raw)) return { fix: "Resend didn't accept the API key. Copy a new one from resend.com → API Keys into RESEND_API_KEY in Vercel, then redeploy.", raw };
+  if (status === 403 || /domain/i.test(raw)) return { fix: `The sender's domain isn't verified yet. In resend.com → Domains, add ${FROM.match(/@([^>]+)/)?.[1] ?? "the domain"} and copy its DNS records into Vercel → Domains, then wait for "Verified".`, raw };
+  if (status === 429) return { fix: "Resend's sending limit was reached (the free plan allows 100 emails a day). It resets tomorrow.", raw };
+  return { fix: "Resend didn't answer as expected.", raw };
+}
+
+/** Settings → "Send test email": sends one email to R&X and reports exactly what Resend said */
+export async function sendTestEmail() {
+  if (!emailReady()) return { ok: false as const, fix: "RESEND_API_KEY isn't set on this deploy. Add it in Vercel → Settings → Environment Variables, then redeploy.", raw: "", from: FROM };
+  const { email: to } = await getBusinessInfo();
+  if (!to) return { ok: false as const, fix: "There's no business email to send to. Add one under Contact & socials below.", raw: "", from: FROM };
+  try {
+    const title = "✅ Prueba de correo";
+    await send(to, title, layout(title, `<p style="margin:0;font-size:16px;line-height:1.5">Si ves esto, los correos de pedidos nuevos y los recibos de clientes ya funcionan.</p>`), "Si ves esto, los correos de pedidos ya funcionan.");
+    return { ok: true as const, to, from: FROM };
+  } catch (e) {
+    console.error("[email] test failed", e);
+    return { ok: false as const, ...explain(e), from: FROM };
+  }
 }
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -94,7 +128,7 @@ async function claim(id: string, column: "confirmation_emailed_at" | "ready_emai
 const when = (o: EmailOrder) => `${o.pickup_day.toLowerCase()} a las ${o.pickup_time}`;
 
 export async function sendOrderConfirmation(orderId: string) {
-  if (!mailer()) return;
+  if (!emailReady()) return;
   const o = await loadOrder(orderId);
   if (!o?.customer_email || !(await claim(o.id, "confirmation_emailed_at"))) return;
 
@@ -135,7 +169,7 @@ ${button(`${SITE}/pedido/gracias/${o.id}`, "Ver mi pedido")}`;
 }
 
 export async function sendOrderReady(orderId: string) {
-  if (!mailer()) return;
+  if (!emailReady()) return;
   const o = await loadOrder(orderId);
   if (!o?.customer_email || !(await claim(o.id, "ready_emailed_at"))) return;
 
@@ -151,7 +185,7 @@ ${button(`${SITE}/pedido/gracias/${o.id}`, "Seguir mi pedido")}`
 }
 
 export async function sendOrderDelivered(orderId: string) {
-  if (!mailer()) return;
+  if (!emailReady()) return;
   const o = await loadOrder(orderId);
   if (!o?.customer_email || !(await claim(o.id, "delivered_emailed_at"))) return;
 
@@ -163,11 +197,11 @@ ${button(`${SITE}/pedido/gracias/${o.id}`, "Ver mi pedido")}`;
   await send(o.customer_email, title, layout(title, body), `Entregamos tu pedido ${number} en ${o.delivery_address}. ${SITE}/pedido/gracias/${o.id}`);
 }
 
-// New-order emails to R&X: one when the order is paid, then one every 30
-// seconds (the reminders timer) until someone accepts it, for 15 minutes.
-// Customer receipts go through the same Gmail, so these stop for the day at
-// ALERT_EMAILS_PER_DAY to keep room under Gmail's daily sending limit.
-const ALERT_EMAILS_PER_DAY = 300;
+// New-order emails to R&X: one when the order is paid, then a reminder at 5
+// and 10 minutes if nobody has accepted it. Resend's free plan sends 100
+// emails a day, receipts included, so alerts stop for the day at
+// ALERT_EMAILS_PER_DAY to leave room for customers' receipts.
+const ALERT_EMAILS_PER_DAY = 40;
 
 /** Counts one alert email for today; false once today's limit is reached */
 async function claimAlertEmail() {
@@ -186,11 +220,11 @@ async function claimAlertEmail() {
   return true;
 }
 
-/** Emails R&X about a paid order nobody has accepted. `waited` is set on the repeats. Throws if Gmail refuses. */
+/** Emails R&X about a paid order nobody has accepted. `waited` is set on the repeats. Throws if Resend refuses. */
 export async function sendStaffOrderAlert(orderId: string, waited?: string) {
-  if (!mailer()) return;
+  if (!emailReady()) return;
   const [o, info] = await Promise.all([loadOrder(orderId), getBusinessInfo()]);
-  const to = info.email || process.env.GMAIL_USER;
+  const to = info.email;
   if (!o || !to || !(await claimAlertEmail())) return;
 
   const number = o.order_number ? `#${o.order_number}` : `#${o.id.slice(0, 8).toUpperCase()}`;

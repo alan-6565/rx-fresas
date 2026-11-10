@@ -6,10 +6,11 @@ import { sendStaffOrderAlert } from "@/lib/email";
 
 // Supabase calls this every 30 seconds (pg_cron + pg_net). Each paid order
 // nobody has accepted yet gets another banner, for up to 20 minutes, and
-// another email to R&X, for up to 15.
+// another email to R&X at 5 and 10 minutes.
 const FIRST_REMINDER_SECONDS = 25;
 const STOP_AFTER_MINUTES = 20;
-const STOP_EMAILS_AFTER_MINUTES = 15;
+/** Waits (in seconds) that also get a reminder email */
+const EMAIL_AT_SECONDS = [300, 600];
 
 function authorized(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -47,8 +48,8 @@ export async function POST(req: Request) {
       url: "/admin/orders",
       tag: `order-${o.order_number}`,
     });
-    // If Gmail refuses one, don't keep trying the rest this round
-    if (emailing && ms <= STOP_EMAILS_AFTER_MINUTES * 60_000) {
+    // If Resend refuses one, don't keep trying the rest this round
+    if (emailing && EMAIL_AT_SECONDS.includes(seconds)) {
       await sendStaffOrderAlert(o.id, waited).catch((e) => {
         emailing = false;
         console.error("[email] reminder failed", e);
