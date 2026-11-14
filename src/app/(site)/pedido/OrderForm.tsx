@@ -11,6 +11,7 @@ import { PLATFORM_FEE_PER_ITEM, quote } from "@/lib/pricing";
 import { discountLabel, firstOrderCents, freeDrinkCents, POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
 import { useCart } from "@/lib/cart";
 import { PageTop, Photo } from "@/components/ui";
+import { GiftRibbon, Holly } from "@/components/navidad/Decor";
 import { AppleIcon, ArrowRightIcon, BagIcon, BoltIcon, CarIcon, ClockIcon, HeartDoodle, LockIcon, PinIcon, StarIcon, TrashIcon } from "@/components/icons";
 
 // Checkout in two steps: 1) pickup or delivery, when, and who; 2) review,
@@ -303,7 +304,8 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
     <PageTop>
       <div ref={top} className="scroll-mt-28">
         <h1 className="flex items-center gap-3 text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
-          Finalizar Pedido <HeartDoodle className="w-9 h-9 text-rose" />
+          Finalizar Pedido <HeartDoodle className="no-xmas w-9 h-9 text-rose" />
+          <Holly className="w-12 h-10 -rotate-6" />
         </h1>
         <p className="mt-2 text-lg text-ink-soft">Completa la información de tu pedido.</p>
       </div>
@@ -562,7 +564,8 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
         </div>
 
         {/* Order summary */}
-        <aside className="rounded-[2rem] border border-white bg-white/85 p-5 shadow-[0_10px_40px_rgba(140,42,60,0.10)] backdrop-blur sm:p-7 lg:sticky lg:top-28">
+        <aside className="relative isolate rounded-[2rem] border border-white bg-white/85 p-5 shadow-[0_10px_40px_rgba(140,42,60,0.10)] backdrop-blur sm:p-7 lg:sticky lg:top-28">
+          <GiftRibbon />
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-3 font-hand text-3xl">
               <BagIcon className="w-8 h-8 text-wine" /> Tu Pedido ({cart.count})

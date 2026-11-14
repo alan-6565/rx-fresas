@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ContactLinks } from "@/components/ContactLinks";
 import { HeartDoodle, MessageIcon } from "@/components/icons";
+import { Holly } from "@/components/navidad/Decor";
 
 export const metadata: Metadata = { title: "Contacto — R&X Fresas con Crema" };
 
@@ -39,7 +40,8 @@ export default function ContactPage() {
               <path d="M4 9c30-6 75-7 112-3" />
             </svg>
           </span>
-          <HeartDoodle className="w-11 h-11 sm:w-14 sm:h-14 text-rose rotate-12 shrink-0 rx-float" />
+          <HeartDoodle className="no-xmas w-11 h-11 sm:w-14 sm:h-14 text-rose rotate-12 shrink-0 rx-float" />
+          <Holly className="w-14 h-12 sm:w-20 sm:h-16 -rotate-6 shrink-0 rx-float" />
         </h1>
         <p className="rx-hero-in mt-10 text-lg sm:text-2xl [animation-delay:.16s]">¿Tienes preguntas o quieres que vayamos a un evento? ¡Escríbenos!</p>
 

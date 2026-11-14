@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Holly } from "@/components/navidad/Decor";
 import Link from "next/link";
 import { ArrowRightIcon, HeartDoodle } from "@/components/icons";
 
@@ -39,7 +40,8 @@ export function Heading({ children, as = "h2", sub, className = "" }: { children
     <div className={className}>
       <Tag className={`inline-flex items-center gap-3 font-hand text-ink leading-none ${size}`}>
         {children}
-        <HeartDoodle className={`${as === "h1" ? "w-10 h-10" : "w-8 h-8"} text-rose rotate-12 shrink-0`} />
+        <HeartDoodle className={`no-xmas ${as === "h1" ? "w-10 h-10" : "w-8 h-8"} text-rose rotate-12 shrink-0`} />
+        <Holly className={`${as === "h1" ? "w-14 h-12" : "w-12 h-10"} -rotate-6 shrink-0`} />
       </Tag>
       {sub && <p className="mt-3 text-lg text-ink-soft">{sub}</p>}
     </div>

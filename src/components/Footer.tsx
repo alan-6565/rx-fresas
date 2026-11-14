@@ -4,15 +4,18 @@ import { getSpots } from "@/lib/catalog";
 import { hoursSummary } from "@/lib/schedule";
 import { Handle, Logo, Socials } from "@/components/Navbar";
 import { ClockIcon, PinIcon } from "@/components/icons";
+import { Lights } from "@/components/navidad/Decor";
 
 export default async function Footer() {
   const spots = await getSpots();
   return (
-    <footer className="mt-20 bg-night text-cream">
+    <footer className="relative mt-20 bg-night text-cream">
+      <Lights count={30} className="absolute inset-x-0 -top-3 h-9 w-full" />
       <div className="mx-auto max-w-7xl px-4 sm:px-8 py-12 grid gap-10 md:grid-cols-[auto_1fr_auto] items-center text-center md:text-left">
         <div className="flex flex-col items-center md:items-start gap-3">
           <Logo className="w-24 h-24" />
-          <p className="font-script text-xl text-rose-soft">Hecho con amor ♡</p>
+          <p className="no-xmas font-script text-xl text-rose-soft">Hecho con amor ♡</p>
+          <p className="xmas font-script text-2xl text-rose-soft">¡Felices Fiestas! ♡</p>
         </div>
         <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-cream/80">
           {navLinks.map((link) => (

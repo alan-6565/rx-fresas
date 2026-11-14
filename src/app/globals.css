@@ -219,3 +219,71 @@ html[data-nav-hidden] .rx-below-nav {
     animation: none;
   }
 }
+
+/* ── Navidad ─────────────────────────────────────────────
+   Holiday decorations (.xmas) only show while <html data-season="navidad">,
+   set by the date script in app/layout.tsx. .no-xmas hides things during it. */
+html:not([data-season="navidad"]) .xmas {
+  display: none !important;
+}
+html[data-season="navidad"] .no-xmas {
+  display: none !important;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 10px var(--glow)); }
+  50% { opacity: 0.45; filter: drop-shadow(0 0 1px var(--glow)); }
+}
+.bulb {
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulb {
+    animation: none;
+  }
+}
+
+@keyframes ornament-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+.ornament {
+  transform-origin: 50% 0;
+  animation: ornament-sway 3.2s ease-in-out infinite;
+}
+
+/* "¡Agregado!" sparkle when something lands in the cart */
+@keyframes sparkle-pop {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; }
+}
+.sparkle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+  animation: sparkle-pop 0.7s ease-out forwards;
+}
+
+/* Snow drifting down the thank-you page */
+@keyframes flake-fall {
+  from { transform: translateY(-10vh) rotate(0deg); }
+  to { transform: translateY(110vh) rotate(360deg); }
+}
+.flake {
+  position: fixed;
+  top: 0;
+  pointer-events: none;
+  animation: flake-fall linear forwards;
+  z-index: 50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ornament, .sparkle, .flake {
+    animation: none;
+  }
+  .sparkle, .flake {
+    display: none;
+  }
+}

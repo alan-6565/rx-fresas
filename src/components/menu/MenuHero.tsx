@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { CupIcon, HeartDoodle, PancakeIcon, StrawberryIcon } from "@/components/icons";
+import { Holly } from "@/components/navidad/Decor";
 
 // "Nuestro Menú" banner on the strawberry-cream swirl. While scrolling, the
 // photo drifts slower than the page and the title floats up and fades
@@ -55,7 +56,8 @@ export function MenuHero() {
       <div ref={text} className="relative mx-auto flex min-h-[460px] max-w-4xl flex-col items-center justify-center px-4 pb-20 pt-32 text-center sm:min-h-[540px] sm:pt-36 will-change-transform">
         <h1 className="rx-hero-in flex items-start gap-2 font-hand text-7xl leading-none text-ink drop-shadow-[0_2px_12px_rgba(253,243,241,0.9)] sm:text-9xl">
           Nuestro Menú
-          <HeartDoodle className="mt-1 w-10 h-10 shrink-0 rotate-12 text-rose sm:w-16 sm:h-16" />
+          <HeartDoodle className="no-xmas mt-1 w-10 h-10 shrink-0 rotate-12 text-rose sm:w-16 sm:h-16" />
+          <Holly className="mt-1 w-14 h-12 shrink-0 -rotate-6 sm:w-20 sm:h-16" />
         </h1>
         <svg viewBox="0 0 300 16" className="rx-draw -mt-1 w-56 text-rose sm:w-80" aria-hidden>
           <path d="M4 11C70 3 150 2 296 9" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />

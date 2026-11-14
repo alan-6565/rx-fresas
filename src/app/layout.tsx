@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Caveat_Brush, DM_Sans, Kaushan_Script, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { seasonScript } from "@/lib/season";
 
 const caveatBrush = Caveat_Brush({
   variable: "--font-hand",
@@ -34,7 +35,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${caveatBrush.variable} ${kaushan.variable} ${dmSans.variable} ${playfair.variable} h-full antialiased`}>
+    <html lang="es" className={`${caveatBrush.variable} ${kaushan.variable} ${dmSans.variable} ${playfair.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Turns on the holiday look by date (or ?temporada=navidad) before the page paints */}
+        <script dangerouslySetInnerHTML={{ __html: seasonScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-ui">
         {children}
       </body>

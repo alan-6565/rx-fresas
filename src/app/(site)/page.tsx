@@ -12,6 +12,7 @@ import { FIRST_ORDER_CATEGORIES, firstOrderPercent } from "@/lib/rewards-rules";
 import { Reveal } from "@/components/Reveal";
 import { HomePromos } from "@/components/promo/Promos";
 import { getPromotions } from "@/lib/promotions-store";
+import { Countdown, Lights } from "@/components/navidad/Decor";
 import {
   CupIcon,
   HeartDoodle,
@@ -89,11 +90,19 @@ export default async function Home() {
           priority
           fit="object-cover object-[70%_center]"
         />
+        {photos.photo("home.hero") === "/images/hero.jpg" && (
+          <div className="xmas absolute inset-0 lg:left-[30%]">
+            <Image src="/images/hero-navidad.webp" alt="El food truck de R&X decorado para Navidad" fill sizes="100vw" priority className="object-cover object-[70%_center]" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-night/45 lg:hidden" />
         <div className="absolute inset-0 bg-gradient-to-r from-night/95 via-night/70 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night/80 to-transparent" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-8 pt-40 sm:pt-48 pb-20">
+          <p className="xmas mb-3 inline-flex -rotate-3 origin-left items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold backdrop-blur ring-1 ring-white/25">
+            <span aria-hidden>🎄</span> <Countdown />
+          </p>
           <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase -rotate-3 origin-left">
             Café frío y caliente · Antojos · Mini pancakes
           </p>
@@ -105,8 +114,13 @@ export default async function Home() {
               Fresas con <span className="text-white">Crema</span>
             </span>
           </h1>
-          <p className="mt-10 max-w-sm text-lg sm:text-xl">
+          <p className="no-xmas mt-10 max-w-sm text-lg sm:text-xl">
             {business.tagline} <span className="text-rose-soft">♥</span>
+          </p>
+          <p className="xmas mt-10 max-w-sm text-lg sm:text-xl">
+            <span className="font-script text-3xl text-rose-soft">¡Felices Fiestas!</span>
+            <br />
+            Endulza tu Navidad con un antojo de R&amp;X <span className="text-rose-soft">♥</span>
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Button href="/menu" icon={<CupIcon className="w-6 h-6" />}>
@@ -143,6 +157,31 @@ export default async function Home() {
             </Link>
           ))}
           <LoveNote className="hidden lg:block text-2xl pl-6" />
+        </div>
+      </section>
+
+      {/* Navidad: only during the season */}
+      <section className="xmas relative overflow-hidden bg-night text-cream">
+        <Lights count={26} className="absolute inset-x-0 top-0 z-10 h-9 w-full" />
+        <Image src="/images/postre-navidad.webp" alt="Fresas con crema y un latte en el food truck, con luces de Navidad" fill sizes="100vw" className="object-cover object-[75%_center]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-night via-night/80 to-night/10" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-8 py-20 sm:py-28">
+          <p className="font-semibold tracking-[0.2em] uppercase text-rose-soft text-sm">Temporada navideña</p>
+          <h2 className="mt-2 max-w-lg font-hand text-6xl sm:text-7xl leading-none">Navidad en R&amp;X</h2>
+          <p className="mt-5 max-w-md text-lg text-cream/85">
+            Fresas, cafecitos y mini pancakes para tus posadas, el intercambio o simplemente para consentirte en estas fiestas.
+          </p>
+          <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-semibold ring-1 ring-white/20">
+            <span aria-hidden>⏳</span> <Countdown />
+          </p>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Button href="/menu" icon={<CupIcon className="w-6 h-6" />}>
+              Pedir ahora
+            </Button>
+            <Button href="/ubicaciones" variant="light" arrow={false} icon={<PinIcon className="w-5 h-5" />}>
+              Dónde estamos hoy
+            </Button>
+          </div>
         </div>
       </section>
 

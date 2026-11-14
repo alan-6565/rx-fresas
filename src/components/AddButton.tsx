@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
 import { OptionsSheet } from "@/components/OptionsSheet";
+import { Sparkles } from "@/components/navidad/Decor";
 
 /** "+ Agregar": straight into the cart, or first through the options sheet if the item has any */
 export function AddButton({ id, className = "", variant = "soft" }: { id: string; className?: string; variant?: "soft" | "outline" }) {
@@ -25,9 +26,10 @@ export function AddButton({ id, className = "", variant = "soft" }: { id: string
           add(id);
           done();
         }}
-        className={`rounded-full text-sm font-semibold transition-colors ${variant === "outline" ? "mt-3 border-2 px-5 py-2 text-base" : "px-4 py-2"} ${added ? "bg-ink border-ink text-white" : variant === "outline" ? "border-rose/70 bg-white text-rose hover:bg-rose hover:border-rose hover:text-white" : "bg-blush text-rose hover:bg-rose hover:text-white"} ${className}`}
+        className={`relative rounded-full text-sm font-semibold transition-colors ${variant === "outline" ? "mt-3 border-2 px-5 py-2 text-base" : "px-4 py-2"} ${added ? "bg-ink border-ink text-white" : variant === "outline" ? "border-rose/70 bg-white text-rose hover:bg-rose hover:border-rose hover:text-white" : "bg-blush text-rose hover:bg-rose hover:text-white"} ${className}`}
       >
         {added ? "¡Agregado! ♥" : "+ Agregar"}
+        {added && <Sparkles />}
       </button>
       {choosing && item && (
         <OptionsSheet

@@ -8,6 +8,7 @@ import { markOrderPaid } from "@/lib/orders";
 import { pointsFor } from "@/lib/rewards";
 import { POINTS_FOR_DRINK, POINTS_PER_ORDER } from "@/lib/rewards-rules";
 import { HeartSolid, StarIcon } from "@/components/icons";
+import { Flurry, Holly } from "@/components/navidad/Decor";
 import { ClearCart } from "./ClearCart";
 import { Tracker } from "./Tracker";
 
@@ -82,10 +83,16 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
       <ClearCart />
-      <span className="mx-auto grid place-items-center w-20 h-20 rounded-full bg-rose text-white shadow-lg">
+      <Flurry />
+      <span className="no-xmas mx-auto grid place-items-center w-20 h-20 rounded-full bg-rose text-white shadow-lg">
         <HeartSolid className="w-10 h-10" />
       </span>
+      <span className="xmas mx-auto relative grid place-items-center w-24 h-24 rounded-full bg-[radial-gradient(circle,#fff_42%,transparent_43%),conic-gradient(#2f8a4c,#257a41,#2f8a4c,#257a41,#2f8a4c)] shadow-lg">
+        <HeartSolid className="w-9 h-9 text-rose" />
+        <Holly className="absolute -bottom-3 left-1/2 w-14 h-11 -translate-x-1/2" />
+      </span>
       <h1 className="mt-6 font-hand text-6xl">¡Gracias, {firstName}!</h1>
+      <p className="xmas mt-2 font-script text-3xl text-rose">¡Feliz Navidad y próspero Año Nuevo!</p>
       <p className="mt-4 text-lg">
         {delivery ? (
           <>

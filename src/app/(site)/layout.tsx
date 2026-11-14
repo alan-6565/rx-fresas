@@ -8,6 +8,7 @@ import { getBusinessInfo } from "@/lib/business-info";
 import { socialLinks } from "@/lib/business";
 import { getPromotions } from "@/lib/promotions-store";
 import { PromoBar } from "@/components/promo/Promos";
+import { Ornaments, Snowfall } from "@/components/navidad/Decor";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const [{ items }, info, promotions] = await Promise.all([getMenu(), getBusinessInfo(), getPromotions()]);
@@ -16,9 +17,13 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
     <CartProvider menu={items}>
       <PromoBar promotions={promotions.filter((p) => p.on && p.banner)} />
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="relative flex-1">
+        <Ornaments />
+        {children}
+      </main>
       <Footer />
       <EditLayer />
+      <Snowfall />
     </CartProvider>
     </BusinessProvider>
   );

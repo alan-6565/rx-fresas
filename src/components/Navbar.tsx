@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 import { navLinks } from "@/lib/data";
 import { useBusiness } from "@/components/BusinessProvider";
 import { useCart } from "@/lib/cart";
+import { Lights, SantaHat } from "@/components/navidad/Decor";
 import { ArrowRightIcon, BagIcon, CloseIcon, FacebookIcon, InstagramIcon, MenuIcon, TikTokIcon } from "@/components/icons";
 
 export function Logo({ className = "w-24 h-24" }: { className?: string }) {
   return (
     <Link href="/" aria-label="R&X Fresas con Crema, inicio" className={`relative shrink-0 block rounded-full bg-cream shadow-lg ring-4 ring-white ${className}`}>
       <Image src="/images/logo-v2.png" alt="R&X Fresas con Crema" fill sizes="120px" className="object-cover rounded-full" priority />
+      <SantaHat className="absolute -top-[34%] -right-[22%] w-[78%] rotate-[18deg] drop-shadow-md" />
     </Link>
   );
 }
@@ -73,7 +75,8 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-3 flex items-start gap-4">
         <Logo className="w-18 h-18 sm:w-28 sm:h-28" />
 
-        <div className="flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 xl:pl-6 pr-2">
+        <div className="relative flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 xl:pl-6 pr-2">
+          <Lights count={22} className="absolute left-6 right-6 -bottom-6 h-7 w-[calc(100%-3rem)]" />
           <nav className="hidden xl:flex items-center gap-1 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
