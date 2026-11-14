@@ -8,7 +8,7 @@
  * (remembered for the browser tab; ?temporada=auto goes back to the calendar)
  * The first page of each visit opens with the "lights on" curtain; ?intro=1 replays it.
  */
-export const SEASON_START = { month: 11, day: 15 }; // Nov 15
+export const SEASON_START = { month: 11, day: 14 }; // Nov 14
 export const SEASON_END = { month: 1, day: 6 }; // through Día de Reyes, Jan 6
 
 export function isNavidad(d = new Date()) {
