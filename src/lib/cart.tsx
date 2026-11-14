@@ -36,11 +36,15 @@ const STORAGE_KEY = "rx-fresas-cart";
 const keyOf = (i: CartItem) => [i.id, ...[...(i.options ?? [])].sort()].join("|");
 
 // Pre-loaded like the "Tu Pedido" mockup so checkout looks filled in on first visit
-const STARTER: CartItem[] = [
+/** New visitors start with an empty cart (the old demo seeded sample items here) */
+const STARTER: CartItem[] = [];
+
+/** The old demo's sample cart. Browsers that saved it untouched get an empty cart instead. */
+const OLD_DEMO_CART = JSON.stringify([
   { id: "fresa-original", qty: 1, options: ["tamano:12-oz", "crema:casa"] },
   { id: "malvavisco", qty: 1, options: ["estilo:latte"] },
   { id: "pancakes-15", qty: 1, options: ["frutas:fresa", "drizzles:nutella"] },
-];
+]);
 
 export function CartProvider({ menu, children }: { menu: Item[]; children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(STARTER);
@@ -50,7 +54,7 @@ export function CartProvider({ menu, children }: { menu: Item[]; children: React
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- restoring saved cart after hydration
-      if (saved) setItems(JSON.parse(saved));
+      if (saved && saved !== OLD_DEMO_CART) setItems(JSON.parse(saved));
     } catch {}
     setLoaded(true);
   }, []);
