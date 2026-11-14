@@ -5,12 +5,14 @@ import { hoursSummary } from "@/lib/schedule";
 import { Handle, Logo, Socials } from "@/components/Navbar";
 import { ClockIcon, PinIcon } from "@/components/icons";
 import { Lights } from "@/components/navidad/Decor";
+import { WinterNight } from "@/components/navidad/Immersive";
 
 export default async function Footer() {
   const spots = await getSpots();
   return (
     <footer className="relative mt-20 bg-night text-cream">
-      <Lights count={30} className="absolute inset-x-0 -top-3 h-9 w-full" />
+      <WinterNight />
+      <Lights count={30} className="absolute inset-x-0 -top-3 z-10 h-9 w-full" />
       <div className="mx-auto max-w-7xl px-4 sm:px-8 py-12 grid gap-10 md:grid-cols-[auto_1fr_auto] items-center text-center md:text-left">
         <div className="flex flex-col items-center md:items-start gap-3">
           <Logo className="w-24 h-24" />

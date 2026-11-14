@@ -31,7 +31,7 @@ export function CurrentStop({ spots }: { spots: Spot[] }) {
     );
 
   return (
-    <article key={`${stop.spot.id}-${stop.offset}`} className="rx-pop rounded-[2rem] bg-white border border-line shadow-sm p-3 sm:p-4 grid gap-5 md:grid-cols-[1fr_1.25fr] items-stretch">
+    <article key={`${stop.spot.id}-${stop.offset}`} className="snowcap rx-pop rounded-[2rem] bg-white border border-line shadow-sm p-3 sm:p-4 grid gap-5 md:grid-cols-[1fr_1.25fr] items-stretch">
       <Photo
         slot={`spot:${stop.spot.id}`}
         src={stop.spot.image}

@@ -13,6 +13,7 @@ import { Reveal } from "@/components/Reveal";
 import { HomePromos } from "@/components/promo/Promos";
 import { getPromotions } from "@/lib/promotions-store";
 import { Countdown, Lights } from "@/components/navidad/Decor";
+import { Snowdrift } from "@/components/navidad/Immersive";
 import {
   CupIcon,
   HeartDoodle,
@@ -93,11 +94,13 @@ export default async function Home() {
         {photos.photo("home.hero") === "/images/hero.jpg" && (
           <div className="xmas absolute inset-0 lg:left-[30%]">
             <Image src="/images/hero-navidad.webp" alt="El food truck de R&X decorado para Navidad" fill sizes="100vw" priority className="object-cover object-[70%_center]" />
+            <video src="/video/hero-navidad.mp4" poster="/images/hero-navidad.webp" autoPlay muted loop playsInline preload="metadata" aria-hidden className="absolute inset-0 h-full w-full object-cover object-[70%_center]" />
           </div>
         )}
         <div className="absolute inset-0 bg-night/45 lg:hidden" />
         <div className="absolute inset-0 bg-gradient-to-r from-night/95 via-night/70 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night/80 to-transparent" />
+        <Snowdrift className="z-10" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-8 pt-40 sm:pt-48 pb-20">
           <p className="xmas mb-3 inline-flex -rotate-3 origin-left items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold backdrop-blur ring-1 ring-white/25">
@@ -165,6 +168,7 @@ export default async function Home() {
         <Lights count={26} className="absolute inset-x-0 top-0 z-10 h-9 w-full" />
         <Image src="/images/postre-navidad.webp" alt="Fresas con crema y un latte en el food truck, con luces de Navidad" fill sizes="100vw" className="object-cover object-[75%_center]" />
         <div className="absolute inset-0 bg-gradient-to-r from-night via-night/80 to-night/10" />
+        <Snowdrift className="z-10" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-8 py-20 sm:py-28">
           <p className="font-semibold tracking-[0.2em] uppercase text-rose-soft text-sm">Temporada navideña</p>
           <h2 className="mt-2 max-w-lg font-hand text-6xl sm:text-7xl leading-none">Navidad en R&amp;X</h2>
@@ -215,13 +219,13 @@ export default async function Home() {
             {cafes.map((item) => (
               <article
                 key={item.id}
-                className="group rounded-2xl bg-white shadow-sm border border-line overflow-hidden"
+                className="snowcap group rounded-2xl bg-white shadow-sm border border-line"
               >
                 <Photo
                   slot={`item:${item.id}`}
                   src={item.image}
                   alt={item.name}
-                  className="aspect-square"
+                  className="aspect-square overflow-hidden rounded-t-2xl"
                   sizes="(min-width:1024px) 25vw, 50vw"
                 />
                 <div className="p-4 text-center">

@@ -164,7 +164,7 @@ function Heart({ on, name, onClick }: { on: boolean; name: string; onClick: () =
 }
 
 const cardClass =
-  "rx-hero-in flex gap-4 rounded-[1.75rem] border border-white bg-white/90 p-3 shadow-[0_10px_30px_rgba(232,80,106,0.10)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(232,80,106,0.18)]";
+  "snowcap rx-hero-in flex gap-4 rounded-[1.75rem] border border-white bg-white/90 p-3 shadow-[0_10px_30px_rgba(232,80,106,0.10)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(232,80,106,0.18)]";
 
 function ItemCard({ item, i, fav, onFav }: { item: Item; i: number; fav: boolean; onFav: () => void }) {
   return (

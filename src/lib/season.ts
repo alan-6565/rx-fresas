@@ -6,6 +6,7 @@
  *
  * Preview any day:  ?temporada=navidad   Turn off:  ?temporada=normal
  * (remembered for the browser tab; ?temporada=auto goes back to the calendar)
+ * The first page of each visit opens with the "lights on" curtain; ?intro=1 replays it.
  */
 export const SEASON_START = { month: 11, day: 15 }; // Nov 15
 export const SEASON_END = { month: 1, day: 6 }; // through Día de Reyes, Jan 6
@@ -30,7 +31,9 @@ if(q==='navidad'){on=true}else if(q==='normal'){on=false}else{
 var pt=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'}));
 var m=pt.getMonth()+1,d=pt.getDate();
 on=(m===${SEASON_START.month}&&d>=${SEASON_START.day})||m===12||(m===${SEASON_END.month}&&d<=${SEASON_END.day});}
-if(on)document.documentElement.setAttribute('data-season','navidad');
+if(on){var h=document.documentElement;h.setAttribute('data-season','navidad');
+var iq=new URLSearchParams(location.search).get('intro');
+if(iq==='1'||(!sessionStorage.getItem('rx-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&location.pathname.indexOf('/pedido/gracias')!==0))h.setAttribute('data-intro','1');}
 }catch(e){}})();`;
 
 /** Days left until Christmas Day (Pacific), 0 on the day itself */

@@ -91,6 +91,9 @@ export function LocationsHero() {
                 sizes="100vw"
                 className="object-cover object-center"
               />
+              <div className="xmas absolute inset-0">
+                <Image src="/images/ubicaciones-navidad.webp" alt="" fill priority sizes="100vw" className="object-cover object-center" />
+              </div>
               {DROPS.map((d, i) => (
                 <span
                   key={i}

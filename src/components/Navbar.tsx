@@ -75,7 +75,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-3 flex items-start gap-4">
         <Logo className="w-18 h-18 sm:w-28 sm:h-28" />
 
-        <div className="relative flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 xl:pl-6 pr-2">
+        <div className="snowcap relative flex-1 mt-2 sm:mt-5 h-14 rounded-full bg-cream/95 backdrop-blur shadow-md flex items-center justify-between gap-3 pl-3 xl:pl-6 pr-2">
           <Lights count={22} className="absolute left-6 right-6 -bottom-6 h-7 w-[calc(100%-3rem)]" />
           <nav className="hidden xl:flex items-center gap-1 text-sm font-medium">
             {navLinks.map((link) => (

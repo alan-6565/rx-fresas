@@ -47,6 +47,9 @@ export function MenuHero() {
       <div ref={bg} className="absolute inset-0 will-change-transform">
         <div className="rx-drift absolute inset-0">
           <Image src="/images/menu-swirl.jpg" alt="" fill priority sizes="100vw" className="object-cover object-center" />
+          <div className="xmas absolute inset-0">
+            <Image src="/images/menu-navidad.webp" alt="" fill priority sizes="100vw" className="object-cover object-center" />
+          </div>
         </div>
       </div>
       {/* Soft cream glow behind the words, and a fade into the page below */}

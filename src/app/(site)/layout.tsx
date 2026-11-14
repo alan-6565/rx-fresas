@@ -9,6 +9,7 @@ import { socialLinks } from "@/lib/business";
 import { getPromotions } from "@/lib/promotions-store";
 import { PromoBar } from "@/components/promo/Promos";
 import { Ornaments, Snowfall } from "@/components/navidad/Decor";
+import { IntroCurtain, SnowTrail } from "@/components/navidad/Immersive";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const [{ items }, info, promotions] = await Promise.all([getMenu(), getBusinessInfo(), getPromotions()]);
@@ -24,6 +25,8 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
       <Footer />
       <EditLayer />
       <Snowfall />
+      <SnowTrail />
+      <IntroCurtain />
     </CartProvider>
     </BusinessProvider>
   );
