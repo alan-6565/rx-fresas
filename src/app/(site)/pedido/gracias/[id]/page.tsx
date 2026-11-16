@@ -144,7 +144,7 @@ export default async function ThanksPage({ params }: PageProps<"/pedido/gracias/
         <dl className="mt-3 pt-3 border-t border-line space-y-1 text-sm text-ink-soft">
           {order.discount_cents > 0 && (
             <div className="flex justify-between font-semibold text-wine">
-              <dt>{order.discount_label ?? "Bebida gratis ⭐"}</dt>
+              <dt>{(order.discount_label ?? "Bebida gratis").replace(/\s*[🎉⭐]/gu, "")}</dt>
               <dd>−{money(order.discount_cents / 100)}</dd>
             </div>
           )}

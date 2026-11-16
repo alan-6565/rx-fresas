@@ -3,55 +3,23 @@ import Link from "next/link";
 import { business, money, NO_PHOTO } from "@/lib/data";
 import { hasRequiredUpcharge } from "@/lib/options";
 import { getSitePhotos } from "@/lib/site-photos";
-import { getMenu } from "@/lib/catalog";
+import { getMenu, getSpots } from "@/lib/catalog";
 import { Button, Heading, LoveNote, Photo } from "@/components/ui";
 import { Handle, Socials } from "@/components/Navbar";
 import { AddButton } from "@/components/AddButton";
-import { DrinkCarousel } from "@/components/DrinkCarousel";
+import { MenuShelf } from "@/components/home/MenuShelf";
+import { FirstOrderDeal } from "@/components/home/FirstOrderDeal";
+import { HeroStatus } from "@/components/home/HeroStatus";
 import { FIRST_ORDER_CATEGORIES, firstOrderPercent } from "@/lib/rewards-rules";
 import { Reveal } from "@/components/Reveal";
 import { HomePromos } from "@/components/promo/Promos";
 import { getPromotions } from "@/lib/promotions-store";
 import { Countdown, Lights } from "@/components/navidad/Decor";
 import { Snowdrift } from "@/components/navidad/Immersive";
-import {
-  CupIcon,
-  HeartDoodle,
-  LeafIcon,
-  PancakeIcon,
-  PinIcon,
-  StrawberryIcon,
-} from "@/components/icons";
-
-const features = [
-  {
-    icon: StrawberryIcon,
-    title: "Fresas con Crema",
-    sub: "Frescas y deliciosas",
-    href: "/menu#fresas",
-  },
-  {
-    icon: CupIcon,
-    title: "Cafés Fríos y Calientes",
-    sub: "Para cualquier momento",
-    href: "/menu#cafes",
-  },
-  {
-    icon: PancakeIcon,
-    title: "Mini Pancakes",
-    sub: "El antojo perfecto",
-    href: "/menu#pancakes",
-  },
-  {
-    icon: LeafIcon,
-    title: "Especiales de Temporada",
-    sub: "Sabores únicos",
-    href: "/menu#otono",
-  },
-];
+import { CupIcon, HeartDoodle, LeafIcon, PinIcon, StrawberryIcon } from "@/components/icons";
 
 export default async function Home() {
-  const [{ categories, items }, photos, promotions] = await Promise.all([getMenu(), getSitePhotos(), getPromotions()]);
+  const [{ categories, items }, photos, promotions, spots] = await Promise.all([getMenu(), getSitePhotos(), getPromotions(), getSpots()]);
   // Four drinks with real photos, cafés first, then whatever else is on the menu
   // (one card per photo, so two sizes of the same cup don't show twice)
   const cafes = [
@@ -63,17 +31,29 @@ export default async function Home() {
       (item, i, list) => list.findIndex((x) => x.image === item.image) === i,
     )
     .slice(0, 4);
-  // The carousel: drinks and fresas with real photos, each with its first-order percent
-  const slides = items
+  // The first-order ticket: drinks and fresas with real photos, $1 off shown as a percent
+  const dealDrinks = items
     .filter((i) => FIRST_ORDER_CATEGORIES.includes(i.category) && i.image !== NO_PHOTO)
+    .filter((item, i, list) => list.findIndex((x) => x.image === item.image) === i)
     .map((i) => ({
       id: i.id,
       name: i.name,
       image: i.image,
       category: i.category,
-      price: `${hasRequiredUpcharge({ price: i.price, options: i.options ?? [] }) ? "Desde " : ""}${money(i.price)}`,
+      price: i.price,
+      from: hasRequiredUpcharge({ price: i.price, options: i.options ?? [] }),
       percent: firstOrderPercent(Math.round(i.price * 100)),
     }));
+  // One photo door per menu section that has photos, in menu order
+  const shelves = categories
+    .filter((c) => c.id !== "extras")
+    .map((c) => {
+      const list = items.filter((i) => i.category === c.id);
+      const pic = list.find((i) => i.image !== NO_PHOTO);
+      return pic ? { id: c.id, label: c.label, image: pic.image, count: list.length, from: money(Math.min(...list.map((i) => i.price))).replace(".00", "") } : null;
+    })
+    .filter((s) => s !== null)
+    .slice(0, 5);
   const otono = items.filter((i) => i.category === "otono").slice(0, 2);
   const otonoTitle =
     categories.find((c) => c.id === "otono")?.label ?? "Para el Otoño";
@@ -103,8 +83,8 @@ export default async function Home() {
         <Snowdrift className="z-10" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-8 pt-40 sm:pt-48 pb-20">
-          <p className="xmas mb-3 inline-flex -rotate-3 origin-left items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold backdrop-blur ring-1 ring-white/25">
-            <span aria-hidden>🎄</span> <Countdown />
+          <p className="xmas mb-3 inline-flex -rotate-3 origin-left items-center gap-2.5 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold backdrop-blur ring-1 ring-white/25">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-rose-soft" /> <Countdown />
           </p>
           <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase -rotate-3 origin-left">
             Café frío y caliente · Antojos · Mini pancakes
@@ -125,43 +105,18 @@ export default async function Home() {
             <br />
             Endulza tu Navidad con un antojo de R&amp;X <span className="text-rose-soft">♥</span>
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Button href="/menu" icon={<CupIcon className="w-6 h-6" />}>
-              Ver Menú
+          <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+            <Button href="/menu" className="min-h-12 px-8 text-base">
+              Ordenar ahora
             </Button>
-            <Button
-              href="/ubicaciones"
-              variant="light"
-              arrow={false}
-              icon={<PinIcon className="w-5 h-5" />}
-            >
-              Nuestras Ubicaciones
-            </Button>
+            <HeroStatus spots={spots} />
           </div>
         </div>
+        {/* room for the menu shelf that rises out of the hero */}
+        <div className="h-24 sm:h-28" />
       </section>
 
-      {/* Category strip */}
-      <section className="relative bg-cream border-b border-line">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8 py-8 grid grid-cols-2 lg:grid-cols-[repeat(4,1fr)_auto] gap-y-8 items-center">
-          {features.map(({ icon: Icon, title, sub, href }, i) => (
-            <Link
-              key={title}
-              href={href}
-              className={`group flex items-center gap-4 px-2 sm:px-6 ${i > 0 ? "lg:border-l border-line" : ""}`}
-            >
-              <Icon className="w-12 h-12 sm:w-14 sm:h-14 text-rose shrink-0 group-hover:scale-110 transition-transform" />
-              <span>
-                <span className="block font-semibold leading-tight">
-                  {title}
-                </span>
-                <span className="block text-sm text-ink-soft">{sub}</span>
-              </span>
-            </Link>
-          ))}
-          <LoveNote className="hidden lg:block text-2xl pl-6" />
-        </div>
-      </section>
+      <MenuShelf shelves={shelves} />
 
       {/* Navidad: only during the season */}
       <section className="xmas relative overflow-hidden bg-night text-cream">
@@ -176,7 +131,7 @@ export default async function Home() {
             Fresas, cafecitos y mini pancakes para tus posadas, el intercambio o simplemente para consentirte en estas fiestas.
           </p>
           <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-semibold ring-1 ring-white/20">
-            <span aria-hidden>⏳</span> <Countdown />
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-rose-soft" /> <Countdown />
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Button href="/menu" icon={<CupIcon className="w-6 h-6" />}>
@@ -192,17 +147,7 @@ export default async function Home() {
       <HomePromos promotions={promotions.filter((p) => p.on && p.homeCard)} />
 
       {/* First-order deal, with the drinks it works on */}
-      {slides.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-12">
-          <div className="rounded-[2rem] bg-blush px-4 py-6 sm:px-8">
-            <h2 className="text-center text-xl font-extrabold text-wine sm:text-2xl">🎉 Primer pedido: hasta {Math.max(...slides.map((s) => s.percent))}% de descuento en bebidas seleccionadas</h2>
-            <p className="mt-1 text-center text-xs text-ink-soft">En 1 bebida o fresas con crema de tu primer pedido en línea. El porcentaje depende del precio.</p>
-            <div className="mt-5">
-              <DrinkCarousel slides={slides} />
-            </div>
-          </div>
-        </section>
-      )}
+      <FirstOrderDeal drinks={dealDrinks} />
 
       {/* Menu preview */}
       <Reveal>
@@ -303,7 +248,7 @@ export default async function Home() {
           <Heading>Nuestra Historia</Heading>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft max-w-xl">
             {/* In the owners' own words, from their questionnaire */}
-            Te ofrecemos postres 🍨 ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas. Somos un negocio local que aprecia y agradece a toda
+            Te ofrecemos postres ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas. Somos un negocio local que aprecia y agradece a toda
             nuestra comunidad por su apoyo.
           </p>
           <Button href="/nosotros" className="mt-8">

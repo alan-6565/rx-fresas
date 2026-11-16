@@ -31,9 +31,9 @@ export function freeDrinkCents(lines: { item: { category: string; price: number 
 
 /** What a discount on an order was for; first orders show the percent on the cheapest item it works on, the biggest it can be */
 export function discountLabel(pointsRedeemed: number, lines: DiscountLine[]) {
-  if (pointsRedeemed > 0) return "Bebida gratis ⭐";
+  if (pointsRedeemed > 0) return "Bebida gratis";
   const percent = firstOrderPercent(Math.min(...firstOrderLines(lines).map((l) => l.unit)));
-  return `Primer pedido: ${percent}% de descuento 🎉`;
+  return `Primer pedido: ${percent}% de descuento`;
 }
 
 /** "j***@gmail.com" */

@@ -388,7 +388,7 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                       </div>
                       <p className={`mt-2 text-sm ${dQuote && "error" in dQuote ? "font-semibold text-rose-dark" : dOk ? "font-semibold text-wine" : "text-ink-soft"}`}>
                         {dOk
-                          ? `📍 ${dOk.label} desde ${spot?.name} · Entrega ${money(dOk.feeCents / 100)}`
+                          ? `${dOk.label} desde ${spot?.name} · Entrega ${money(dOk.feeCents / 100)}`
                           : dQuote && "error" in dQuote
                             ? dQuote.error
                             : quoteKey
@@ -521,10 +521,10 @@ export default function OrderForm({ spots, delivery }: { spots: Spot[]; delivery
                             </button>
                           </div>
                         ) : !hasDrink ? (
-                          <p className="font-semibold">🎉 ¡Tienes una bebida gratis! Agrega una bebida a tu orden para usarla.</p>
+                          <p className="font-semibold">¡Tienes una bebida gratis! Agrega una bebida a tu orden para usarla.</p>
                         ) : !codeSentTo ? (
                           <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="font-semibold">🎉 ¡Tienes una bebida gratis!</p>
+                            <p className="font-semibold">¡Tienes una bebida gratis!</p>
                             <button type="button" disabled={rewardBusy} onClick={() => rewardCall("send")} className="rounded-full bg-wine px-5 py-2.5 text-sm font-semibold text-white hover:bg-wine-dark disabled:opacity-60">
                               {rewardBusy ? "Enviando…" : "Usar mi bebida gratis"}
                             </button>

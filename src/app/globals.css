@@ -401,3 +401,38 @@ html[data-intro] body {
     opacity: 1;
   }
 }
+
+/* ───── First-order ticket: cut-out notches where the stub tears off ───── */
+.rx-ticket-perf::before,
+.rx-ticket-perf::after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--cream);
+  top: -16px;
+}
+.rx-ticket-perf::before { left: -16px; }
+.rx-ticket-perf::after { right: -16px; }
+@media (min-width: 1024px) {
+  .rx-ticket-perf::after { top: auto; bottom: -16px; right: auto; left: -16px; }
+}
+
+/* A row that rolls by on its own on computers; on phones it's a normal swipe row */
+.rx-marquee { overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1.75rem; }
+@media (min-width: 640px) { .rx-marquee { scroll-padding-inline: 2.5rem; } }
+.rx-marquee-track { display: flex; width: max-content; }
+.rx-marquee-track > [aria-hidden="true"] { display: none; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .rx-marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .rx-marquee-track > [aria-hidden="true"] { display: list-item; }
+  .rx-marquee-track { animation: rx-marquee var(--rx-dur, 40s) linear infinite; }
+  .rx-marquee:hover .rx-marquee-track,
+  .rx-marquee:focus-within .rx-marquee-track { animation-play-state: paused; }
+}
+@keyframes rx-marquee { to { transform: translateX(calc(-50% - 0.5rem)); } }

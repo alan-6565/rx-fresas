@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getSitePhotos } from "@/lib/site-photos";
+import { getMenu } from "@/lib/catalog";
+import { NO_PHOTO } from "@/lib/data";
 import { Button, Photo } from "@/components/ui";
 import { Reveal } from "@/components/Reveal";
 import { Wave } from "@/components/Wave";
-import { BagIcon, HeartDoodle, LeafIcon, PeopleIcon, PinIcon, StrawberryIcon } from "@/components/icons";
+import { BagIcon, HeartDoodle, PinIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Sobre Nosotros — R&X Fresas con Crema" };
 
+// What they stand for, in their own words underneath; each line gets a photo from the menu section it's about
 const values = [
-  { icon: StrawberryIcon, title: "Ingredientes de Calidad", text: "Usamos productos frescos y de alta calidad." },
-  { icon: HeartDoodle, title: "Hecho con Cariño", text: "Cada bebida y antojo lo preparamos con amor." },
-  { icon: PeopleIcon, title: "Apoyando lo Local", text: "Gracias por ser parte de nuestra historia." },
-  { icon: LeafIcon, title: "Postres y Cafés Únicos", text: "Recetas creativas que nos hacen especiales." },
+  { title: "Fruta fresca, todos los días.", text: "Usamos productos frescos y de alta calidad.", from: ["fresas"] },
+  { title: "Hecho a mano, con cariño.", text: "Cada bebida y antojo lo preparamos con amor.", from: ["cafes"] },
+  { title: "De la comunidad, para la comunidad.", text: "Somos un negocio local. Gracias por ser parte de nuestra historia.", from: ["otono", "redbulls"] },
+  { title: "Recetas que no encuentras en otro lado.", text: "Postres y cafés creativos que nos hacen especiales.", from: ["redbulls", "otono", "fresas"] },
 ];
 
 export default async function AboutPage() {
-  const photos = await getSitePhotos();
+  const [photos, { items }] = await Promise.all([getSitePhotos(), getMenu()]);
+  const used = new Set<string>();
+  const pics = values.map((v) => {
+    const hit = items.find((i) => v.from.includes(i.category) && i.image !== NO_PHOTO && !used.has(i.image));
+    if (hit) used.add(hit.image);
+    return hit?.image ?? null;
+  });
   return (
     <div className="overflow-x-clip -mb-20">
       {/* Dark story banner, tucked under the navbar */}
@@ -51,7 +60,7 @@ export default async function AboutPage() {
             </h1>
             {/* In the owners' own words, from their questionnaire */}
             <div className="mt-8 space-y-4 text-lg leading-relaxed text-white/85">
-              <p>Te ofrecemos postres 🍨 ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas.</p>
+              <p>Te ofrecemos postres ricos para que te endulces la vida, con cafés, mini pancakes y otros tipos de bebidas.</p>
               <p>
                 Somos un negocio local que aprecia y agradece a toda nuestra comunidad por su apoyo. Cada bebida y antojo lo preparamos con cariño para que
                 disfrutes un momento dulce en tu día. <span className="text-rose-soft">♡</span>
@@ -68,22 +77,31 @@ export default async function AboutPage() {
           </div>
 
           {/* What they stand for */}
-          <Reveal className="mt-14 lg:mt-16">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 rounded-[2rem] border border-white/20 bg-white/[0.04] backdrop-blur-sm">
-              {values.map(({ icon: Icon, title, text }, i) => (
-                <div
-                  key={title}
-                  className={`flex items-center gap-4 px-6 py-6 ${i > 0 ? "border-t sm:border-t-0 border-white/15" : ""} ${i % 2 ? "sm:border-l" : ""} ${i > 1 ? "sm:border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""} border-white/15`}
-                >
-                  <Icon className="w-12 h-12 text-rose-soft shrink-0" />
-                  <div>
-                    <h2 className="font-bold leading-tight">{title}</h2>
-                    <p className="mt-1 text-sm text-white/70">{text}</p>
-                  </div>
-                </div>
+          <div className="mt-16 lg:mt-24">
+            <p className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.26em] text-rose-soft">
+              Lo que nos mueve <span className="h-px flex-1 max-w-40 bg-rose-soft/50" />
+            </p>
+            <ol className="mt-6">
+              {values.map((v, i) => (
+                <li key={v.title} className="border-t border-white/15 last:border-b">
+                  <Reveal delay={i * 80}>
+                    <div className="group grid grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 py-6 sm:grid-cols-[3rem_minmax(0,1fr)] lg:grid-cols-[3.5rem_minmax(0,1fr)_17rem] lg:gap-x-8 lg:py-8">
+                      <span className="self-start pt-2 font-serif text-lg italic text-rose-soft sm:pt-3 sm:text-xl lg:self-center lg:pt-0">{String(i + 1).padStart(2, "0")}</span>
+                      <h2 className="font-serif text-[1.65rem] font-extrabold leading-[1.15] sm:text-4xl lg:text-[2.75rem]">
+                        {pics[i] && (
+                          <span className="relative mr-3 inline-block h-9 w-[4.5rem] -translate-y-1 overflow-hidden rounded-full align-middle ring-1 ring-white/25 transition-[width] duration-500 ease-out group-hover:w-28 sm:mr-4 sm:h-12 sm:w-24 sm:group-hover:w-36 lg:h-14 lg:w-28 lg:group-hover:w-40">
+                            <Image src={pics[i]} alt="" fill sizes="160px" className="object-cover" />
+                          </span>
+                        )}
+                        <span>{v.title}</span>
+                      </h2>
+                      <p className="col-start-2 text-white/65 lg:col-start-3 lg:row-start-1">{v.text}</p>
+                    </div>
+                  </Reveal>
+                </li>
               ))}
-            </div>
-          </Reveal>
+            </ol>
+          </div>
         </div>
       </section>
 
