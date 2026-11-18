@@ -44,7 +44,10 @@ export default async function Footer() {
         </div>
       </div>
       <div className="border-t border-cream/10 py-4 text-center text-xs text-cream/50">
-        © {business.name} · {business.city} · <Handle />
+        © {business.name} · {business.city} · <Handle /> ·{" "}
+        <a href="https://www.jcwebs.tech" target="_blank" rel="noopener" className="hover:text-rose-soft">
+          Made by JCWebs
+        </a>
       </div>
     </footer>
   );
