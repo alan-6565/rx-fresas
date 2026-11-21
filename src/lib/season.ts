@@ -33,7 +33,7 @@ var m=pt.getMonth()+1,d=pt.getDate();
 on=(m===${SEASON_START.month}&&d>=${SEASON_START.day})||m===12||(m===${SEASON_END.month}&&d<=${SEASON_END.day});}
 if(on){var h=document.documentElement;h.setAttribute('data-season','navidad');
 var iq=new URLSearchParams(location.search).get('intro');
-if(iq==='1'||(!sessionStorage.getItem('rx-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&location.pathname.indexOf('/pedido/gracias')!==0))h.setAttribute('data-intro','1');}
+if(iq==='1'||(!sessionStorage.getItem('rx-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&location.pathname.indexOf('/pedido/gracias')!==0&&location.pathname.indexOf('/admin')!==0))h.setAttribute('data-intro','1');}
 }catch(e){}})();`;
 
 /** Days left until Christmas Day (Pacific), 0 on the day itself */
